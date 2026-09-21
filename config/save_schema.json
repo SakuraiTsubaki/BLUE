@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "format_policy": {
+    "serialize_raw_c_structs": false,
+    "endianness": "little",
+    "schema_version_required": true,
+    "content_registry_version_required": true,
+    "migration_chain_required": true,
+    "unknown_id_policy": "preserve-or-quarantine-never-reinterpret",
+    "checksum_required_per_extended_block": true
+  },
+  "persistent_ids": {
+    "species_id_bits": 16,
+    "form_id_bits": 16,
+    "move_id_bits": 16,
+    "ability_id_bits": 16,
+    "item_id_bits": 16,
+    "type_id_bits": 16
+  },
+  "compatibility": {
+    "existing_save_must_not_change_meaning_when_new_content_is_appended": true,
+    "old_ids_are_never_reused": true,
+    "removed_content_ids_remain_tombstoned": true,
+    "story_progress_is_separate_from_expanded_content_registry": true
+  },
+  "migration": {
+    "current_version": 1,
+    "minimum_supported_version": 1,
+    "steps": []
+  }
+}

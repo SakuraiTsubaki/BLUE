@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id_model": {
+    "persistent_id_width_bits": 16,
+    "none_id": 0,
+    "invalid_id": 65535,
+    "allocation": "append-only",
+    "renumber_existing_ids": false,
+    "capacity_is_namespace_ceiling_not_static_allocation": true
+  },
+  "species_form_model": {
+    "representation": "composite",
+    "fields": ["species_id", "form_id"],
+    "species_id_width_bits": 16,
+    "form_id_width_bits": 16,
+    "max_species_namespace": 8192,
+    "max_forms_per_species": 1024,
+    "battle_only_forms_use_same_model": true,
+    "personality_or_parameter_variants_need_not_consume_form_ids": true
+  },
+  "namespaces": {
+    "species": {"capacity": 8192, "id_width_bits": 16},
+    "moves": {"capacity": 8192, "id_width_bits": 16},
+    "abilities": {"capacity": 4096, "id_width_bits": 16},
+    "items": {"capacity": 16384, "id_width_bits": 16},
+    "types": {"capacity": 256, "id_width_bits": 16},
+    "natures": {"capacity": 256, "id_width_bits": 16},
+    "evolution_methods": {"capacity": 1024, "id_width_bits": 16},
+    "trainer_classes": {"capacity": 4096, "id_width_bits": 16},
+    "maps": {"capacity": 16384, "id_width_bits": 16},
+    "flags": {"capacity": 32768, "id_width_bits": 16},
+    "vars": {"capacity": 8192, "id_width_bits": 16},
+    "music": {"capacity": 4096, "id_width_bits": 16},
+    "sound_effects": {"capacity": 4096, "id_width_bits": 16}
+  },
+  "table_rules": {
+    "no_generation_sized_fixed_arrays": true,
+    "derive_counts_from_generated_tables": true,
+    "sparse_optional_data_allowed": true,
+    "unknown_future_fields_must_be_ignorable_or_versioned": true
+  }
+}
