@@ -1,89 +1,67 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-LIMITS = ROOT / "config" / "expansion_limits.json"
-SAVE = ROOT / "config" / "save_schema.json"
-ENGINE = ROOT / "manifests" / "engine-base.json"
-
-MINIMUM_CAPACITY = {
-    "species": 4096,
-    "moves": 4096,
-    "abilities": 1024,
-    "items": 8192,
-    "types": 64,
-    "evolution_methods": 256,
-}
-
-PERSISTENT_NAMESPACES = {
-    "species", "moves", "abilities", "items", "types"
-}
 
 
-def load(path: Path) -> dict:
-    with path.open(encoding="utf-8") as f:
+def load_json(path: str) -> dict:
+    with (ROOT / path).open(encoding="utf-8") as f:
         return json.load(f)
 
 
 def validate() -> list[str]:
     errors: list[str] = []
-    limits = load(LIMITS)
-    save = load(SAVE)
-    engine = load(ENGINE)
 
-    model = limits["id_model"]
-    if model["persistent_id_width_bits"] != 16:
-        errors.append("persistent IDs must remain 16-bit")
-    if model["invalid_id"] != 0xFFFF:
-        errors.append("0xFFFF must remain reserved as invalid")
-    if model["renumber_existing_ids"]:
-        errors.append("existing IDs must never be renumbered")
-    if model["allocation"] != "append-only":
-        errors.append("ID allocation must be append-only")
+    limits = load_json("config/expansion_limits.json")
+    save = load_json("config/save_schema.json")
+    storage = load_json("config/storage_baseline.json")
 
-    form = limits["species_form_model"]
-    if form["representation"] != "composite":
-        errors.append("species/forms must use the canonical composite model")
-    if form["species_id_width_bits"] != 16 or form["form_id_width_bits"] != 16:
-        errors.append("species_id and form_id must remain 16-bit")
+    contract = limits["persistent_id_contract"]
+    if contract["minimum_width_bits"] < 16:
+        errors.append("persistent IDs must be at least 16-bit")
+    if contract["reserved_invalid_id"] != 0xFFFF:
+        errors.append("0xFFFF must remain reserved invalid ID")
+    if contract["allocation"] != "append-only" or contract["renumber_existing_ids"]:
+        errors.append("persistent ID allocation must remain append-only without renumbering")
 
-    namespaces = limits["namespaces"]
-    for name, minimum in MINIMUM_CAPACITY.items():
-        actual = namespaces[name]["capacity"]
-        if actual < minimum:
-            errors.append(f"{name} capacity {actual} is below future-ready minimum {minimum}")
+    ns = limits["namespace_policy"]
+    if ns["fixed_preallocated_generation_sized_tables"]:
+        errors.append("generation-sized fixed tables must remain disabled")
+    if ns["capacity_numbers_before_engine_audit"] != "forbidden":
+        errors.append("capacity numbers must not be guessed before engine audit")
 
-    for name, cfg in namespaces.items():
-        width = cfg["id_width_bits"]
-        capacity = cfg["capacity"]
-        if width != 16:
-            errors.append(f"{name} ID width must be 16-bit")
-        if capacity >= model["invalid_id"]:
-            errors.append(f"{name} capacity collides with reserved invalid ID")
+    legacy = storage["legacy_blue"]["battery_sram"]
+    if legacy["raw_bytes"] != 32768 or legacy["bank_bytes"] != 8192 or legacy["bank_count"] != 4:
+        errors.append("legacy Blue SRAM boundary must remain 32 KiB / four 8 KiB banks")
 
-    save_ids = save["persistent_ids"]
-    expected_save_fields = {
-        "species_id_bits", "form_id_bits", "move_id_bits",
-        "ability_id_bits", "item_id_bits", "type_id_bits"
-    }
-    for field in expected_save_fields:
-        if save_ids.get(field) != 16:
-            errors.append(f"save field {field} must be 16-bit")
+    runtime = storage["target_gba_engine"]["flash"]
+    if runtime["sector_size"] * runtime["sector_count"] != 131072:
+        errors.append("GBA target flash must resolve to 128 KiB")
+    if runtime["sector_data_bytes"] + runtime["saveblock3_chunk_bytes"] + runtime["sector_footer_bytes"] != runtime["sector_size"]:
+        errors.append("GBA sector components do not add up to one sector")
 
-    policy = save["format_policy"]
-    if policy["serialize_raw_c_structs"]:
-        errors.append("raw C struct serialization must stay disabled")
-    if not policy["schema_version_required"] or not policy["migration_chain_required"]:
-        errors.append("save versioning and migration chain are mandatory")
+    policy = storage["blue_policy"]
+    if policy["extend_legacy_gb_save_in_place"]:
+        errors.append("legacy GB save must not be extended in place")
 
-    target = engine["target"]
-    if target["content_ceiling"] != "future":
-        errors.append("engine content ceiling must remain future-facing")
-    if not target["generation_number_is_not_an_abi"]:
-        errors.append("generation number must not become storage ABI")
+    if save["legacy_import"]["expected_bytes_from_rom_header"] != legacy["raw_bytes"]:
+        errors.append("save schema legacy size disagrees with ROM-derived SRAM size")
+    if save["runtime_target"]["flash_bytes"] != runtime["sector_size"] * runtime["sector_count"]:
+        errors.append("runtime save schema disagrees with engine storage baseline")
+
+    with (ROOT / "research" / "blue-rom-baseline.csv").open(newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    if len(rows) != 6:
+        errors.append("expected six verified Blue ROM baseline rows")
+    for row in rows:
+        if row["ram_size_code"] != "0x03" or int(row["ram_bytes"]) != 32768:
+            errors.append(f"{row['release_id']}: unexpected cartridge RAM boundary")
+        if row["checksums_valid"].lower() != "true":
+            errors.append(f"{row['release_id']}: ROM checksums are not marked valid")
 
     return errors
 
@@ -94,7 +72,7 @@ def main() -> int:
         for error in errors:
             print(f"ERROR: {error}")
         return 1
-    print("BLUE future-generation expansion contract: OK")
+    print("BLUE ROM/save-grounded expansion contract: OK")
     return 0
 
 

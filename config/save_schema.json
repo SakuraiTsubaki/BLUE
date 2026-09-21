@@ -1,31 +1,42 @@
 {
-  "schema_version": 1,
-  "format_policy": {
-    "serialize_raw_c_structs": false,
-    "endianness": "little",
-    "schema_version_required": true,
-    "content_registry_version_required": true,
-    "migration_chain_required": true,
-    "unknown_id_policy": "preserve-or-quarantine-never-reinterpret",
-    "checksum_required_per_extended_block": true
+  "schema_version": 2,
+  "legacy_import": {
+    "format": "pokemon-blue-raw-battery-sram",
+    "expected_bytes_from_rom_header": 32768,
+    "bank_count": 4,
+    "bank_bytes": 8192,
+    "in_place_extension": false,
+    "exact_layout_verified_from_actual_save_samples": false,
+    "preserve_raw_source": true,
+    "preserve_unknown_bytes": true
   },
-  "persistent_ids": {
-    "species_id_bits": 16,
-    "form_id_bits": 16,
-    "move_id_bits": 16,
-    "ability_id_bits": 16,
-    "item_id_bits": 16,
-    "type_id_bits": 16
-  },
-  "compatibility": {
-    "existing_save_must_not_change_meaning_when_new_content_is_appended": true,
-    "old_ids_are_never_reused": true,
-    "removed_content_ids_remain_tombstoned": true,
-    "story_progress_is_separate_from_expanded_content_registry": true
+  "runtime_target": {
+    "format_family": "pokeemerald-expansion-sector-save",
+    "flash_bytes": 131072,
+    "sector_bytes": 4096,
+    "sector_count": 32,
+    "main_slots": 2,
+    "sectors_per_main_slot": 14,
+    "sector_payload": {
+      "normal_data_bytes": 3968,
+      "saveblock3_chunk_bytes": 116,
+      "footer_bytes": 12
+    }
   },
   "migration": {
-    "current_version": 1,
-    "minimum_supported_version": 1,
-    "steps": []
+    "path": "legacy-blue-sram -> canonical-import-model -> gba-runtime-save",
+    "must_be_explicit": true,
+    "must_be_reversible_to_preserved_source_bytes": true,
+    "numeric_ids_must_not_be_silently_reinterpreted": true,
+    "regional_source_identity_must_be_recorded": true,
+    "current_migration_version": 0,
+    "status": "waiting-for-actual-save-sample-byte-layout"
+  },
+  "future_content": {
+    "save_layout_versioning_required": true,
+    "registry_versioning_required": true,
+    "new_content_must_not_change_existing_serialized_id_meaning": true,
+    "raw_c_struct_dump_as_new_extension_format": false,
+    "saveblock_free_space_must_be_measured_before_adding_fields": true
   }
 }

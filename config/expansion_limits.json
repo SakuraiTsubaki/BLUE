@@ -1,42 +1,50 @@
 {
-  "schema_version": 1,
-  "id_model": {
-    "persistent_id_width_bits": 16,
+  "schema_version": 2,
+  "basis": "ROM/save/engine evidence first; no guessed content-count ceilings",
+  "persistent_id_contract": {
+    "minimum_width_bits": 16,
     "none_id": 0,
-    "invalid_id": 65535,
+    "reserved_invalid_id": 65535,
     "allocation": "append-only",
     "renumber_existing_ids": false,
-    "capacity_is_namespace_ceiling_not_static_allocation": true
+    "removed_ids": "tombstone",
+    "runtime_compaction_allowed_only_with_explicit_translation": true
   },
   "species_form_model": {
     "representation": "composite",
-    "fields": ["species_id", "form_id"],
-    "species_id_width_bits": 16,
-    "form_id_width_bits": 16,
-    "max_species_namespace": 8192,
-    "max_forms_per_species": 1024,
-    "battle_only_forms_use_same_model": true,
-    "personality_or_parameter_variants_need_not_consume_form_ids": true
+    "fields": [
+      "species_id",
+      "form_id"
+    ],
+    "minimum_species_id_width_bits": 16,
+    "minimum_form_id_width_bits": 16,
+    "battle_only_forms_use_same_canonical_model": true,
+    "parameterized_visual_variants_may_use_parameters_instead_of_consuming_global_ids": true
   },
-  "namespaces": {
-    "species": {"capacity": 8192, "id_width_bits": 16},
-    "moves": {"capacity": 8192, "id_width_bits": 16},
-    "abilities": {"capacity": 4096, "id_width_bits": 16},
-    "items": {"capacity": 16384, "id_width_bits": 16},
-    "types": {"capacity": 256, "id_width_bits": 16},
-    "natures": {"capacity": 256, "id_width_bits": 16},
-    "evolution_methods": {"capacity": 1024, "id_width_bits": 16},
-    "trainer_classes": {"capacity": 4096, "id_width_bits": 16},
-    "maps": {"capacity": 16384, "id_width_bits": 16},
-    "flags": {"capacity": 32768, "id_width_bits": 16},
-    "vars": {"capacity": 8192, "id_width_bits": 16},
-    "music": {"capacity": 4096, "id_width_bits": 16},
-    "sound_effects": {"capacity": 4096, "id_width_bits": 16}
+  "namespace_policy": {
+    "fixed_preallocated_generation_sized_tables": false,
+    "hardcoded_generation_count_as_abi": false,
+    "derive_runtime_counts_from_imported_registry": true,
+    "capacity_numbers_before_engine_audit": "forbidden",
+    "audit_required_namespaces": [
+      "species",
+      "forms",
+      "moves",
+      "abilities",
+      "items",
+      "types",
+      "natures",
+      "evolution_methods",
+      "trainer_classes",
+      "maps",
+      "flags",
+      "vars",
+      "music",
+      "sound_effects"
+    ]
   },
-  "table_rules": {
-    "no_generation_sized_fixed_arrays": true,
-    "derive_counts_from_generated_tables": true,
-    "sparse_optional_data_allowed": true,
-    "unknown_future_fields_must_be_ignorable_or_versioned": true
+  "next_gate": {
+    "name": "engine-width-and-save-space-audit",
+    "required_before_assigning_content-capacity-numbers": true
   }
 }

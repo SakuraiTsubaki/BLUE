@@ -1,58 +1,66 @@
 # Future / Generation 10 Readiness
 
-This checklist is deliberately content-agnostic. New official content can be added when known without changing the core ABI.
+BLUE does not guess unreleased content counts. Readiness means the current engine and save model can accept appended content without another fundamental rewrite.
 
-## Data model
+## Phase 0 — evidence baseline
 
-- [x] species ID is not limited to an 8-bit field
-- [x] form is a first-class persistent field
-- [x] moves use persistent 16-bit IDs
-- [x] abilities use persistent 16-bit IDs
-- [x] items use persistent 16-bit IDs
-- [x] types are table-driven and not hard-coded to the current official count
-- [x] evolution methods have extension space
-- [x] generation number is not used as storage ABI
+- [x] six Blue-family ROMs hashed and header-validated
+- [x] original cartridge save boundary established from ROM headers: 32 KiB SRAM
+- [x] mapper differences recorded: MBC1 / MBC3 / MBC5
+- [x] target GBA engine save storage inspected: 128 KiB sector flash
+- [x] legacy GB save and GBA runtime save separated architecturally
+- [ ] actual Japanese Blue save sample inspected
+- [ ] actual English Blue save sample inspected
+- [ ] French/German/Italian/Spanish save samples inspected and compared
 
-## Runtime tables
+## Phase 1 — engine audit
 
-- [x] namespace ceiling is separate from allocated table length
-- [x] generated counts are required
-- [x] sparse optional data is permitted
-- [ ] imported engine source audited for hard-coded counts
-- [ ] battle scripts audited for 8-bit truncation
-- [ ] menu/UI selectors audited for 8-bit truncation
-- [ ] Pokédex/storage/party code audited for form loss
-- [ ] trainer/encounter formats audited for form loss
+Do not assign guessed namespace capacities before these are measured.
 
-## Save
+- [ ] audit every serialized Species field width
+- [ ] audit every serialized Form field / form-loss path
+- [ ] audit every serialized Move field width
+- [ ] audit every serialized Ability field width
+- [ ] audit every serialized Item field width
+- [ ] audit Type storage and type-table assumptions
+- [ ] audit Pokédex flags/count calculations
+- [ ] audit party/storage/trainer/encounter formats
+- [ ] audit battle scripts for 8-bit truncation
+- [ ] measure SaveBlock1 free bytes
+- [ ] measure SaveBlock2 free bytes
+- [ ] measure SaveBlock3 free bytes
+- [ ] measure PokemonStorage free bytes
 
-- [x] raw C-struct serialization is forbidden for new extended blocks
-- [x] schema version is mandatory
-- [x] registry version is mandatory
-- [x] ID reuse is forbidden
-- [x] migration chain is mandatory
-- [ ] concrete extended save-block offsets chosen after engine import
-- [ ] old-save migration tests added
-- [ ] forward-addition regression fixtures added
+## Phase 2 — stable registries
 
-## Assets and localization
+- [ ] define stable species registry
+- [ ] define canonical species + form mapping
+- [ ] define move registry
+- [ ] define ability registry
+- [ ] define item registry
+- [ ] define type registry
+- [ ] preserve existing IDs; append/tombstone only
+- [ ] generate runtime counts from registries
 
-- [ ] graphics registry separated from species IDs
-- [ ] icon/front/back/palette/form assets mapped by registry
-- [ ] cries mapped by registry rather than generation switch
-- [ ] text keys separated from numeric IDs
-- [ ] Japanese source terminology retained as provenance
-- [ ] Korean/current localization layer integrated independently
-- [ ] English and other official localizations mapped without ID changes
+## Phase 3 — legacy save import
 
-## Integration gate
+- [ ] identify exact Japanese Blue save offsets/checksums from real sample
+- [ ] identify exact localized differences from real samples
+- [ ] parse player / party / dex / current box
+- [ ] parse all PC boxes
+- [ ] validate legacy checksums
+- [ ] retain unparsed bytes
+- [ ] map Gen I IDs into canonical BLUE registries
+- [ ] migration fixtures and round-trip provenance tests
 
-Before importing any future generation:
+## Phase 4 — future content gate
 
-1. append registry data;
-2. do not renumber prior IDs;
-3. add/update mechanics through a profile or table;
-4. add assets/localization through registries;
-5. bump content-registry version if persistent mappings changed;
-6. add migration only when serialized layout changed;
-7. run `tools/verify_expansion_contract.py` and tests.
+When new official content exists:
+
+1. append registry entries;
+2. update mechanics tables;
+3. add assets/localization;
+4. verify serialized widths;
+5. verify compiled save-block sizes;
+6. add migration only when layout changes;
+7. never renumber an old persistent ID.
