@@ -1,67 +1,28 @@
 # BLUE
 
-Pocket Monsters Ao / Pokémon Blue를 현대 Generation III / GBA 계열 엔진에서 재구성하는 프로젝트입니다.
+**ポケットモンスター 青** (Generation I)를 **Game Boy Advance / Generation III 계열 기반의 현대화 리메이크**로 재구축하는 저장소입니다.
 
-## 현재 단계 — ROM/save 근거 기반 확장
+## 현재 정본 방향
 
-BLUE의 확장은 추측으로 먼저 숫자를 크게 잡지 않습니다.
+- 일본판 원작과 모든 확인된 revision을 원전으로 전수조사합니다.
+- 원작의 지역, 스토리, 이벤트, NPC, 버전 고유 요소는 보존합니다.
+- 포켓몬/타입/특성/기술/진화/폼/아이템/전투·육성 규칙은 현재 검증 가능한 최신 공식 기준으로 현대화합니다.
+- 최종 실행 대상은 **GBA**입니다.
+- GB/GBC mapper, SRAM, 원본 주소 구조는 원본 분석 자료로 보존하지만 최종 런타임 엔진으로 사용하지 않습니다.
+- 미출시·미검증 세대 콘텐츠는 추측하지 않습니다.
 
-1. 실제 Blue ROM을 조사한다.
-2. 원본 battery save/SRAM 구조를 조사한다.
-3. 대상 GBA 엔진의 실제 save/ID 구조를 조사한다.
-4. 그 차이를 import/migration 계층으로 분리한다.
-5. 그 뒤 Species/Form/Move/Ability/Item/Type 등 실제 엔진 제한을 제거한다.
+## 기반
 
-### 확인된 원본 ROM 기준
+- 원본 조사: `SakuraiTsubaki/PocketMonsters-Ao-Disassembly`
+- 공통 현대화 연구: `SakuraiTsubaki/EMERALD`
+- 현대 코어 기준: `rh-hideout/pokeemerald-expansion@75b806a3ab57a81ff1eb6179288981f0b3cc3050`
 
-현재 6개 Blue 계열 ROM을 직접 검사했습니다.
+## 문서
 
-- Japanese Pocket Monsters Ao: 512 KiB ROM, MBC1+RAM+BATTERY
-- English Blue: 1 MiB ROM, MBC3+RAM+BATTERY
-- French/German/Italian/Spanish Blue: 1 MiB ROM, MBC5+RAM+BATTERY
-- 6개 전부 cartridge RAM size code `0x03` = **32 KiB battery SRAM**
-- 6개 전부 SGB flag `0x03`
-- header/global checksum 검증 통과
+- `PROJECT.md` — 현재 프로젝트 방향의 정본
+- `config/remake.json` — 기계 판독 가능한 작품/엔진/원본 기준
+- `docs/REMAKE_POLICY.md` — 원작 보존과 최신화 정책
 
-해시와 header 값은 `research/blue-rom-baseline.csv`에 기록합니다.
+저장소에 남아 있는 이전 확장 설계 문서와 도구는 삭제하지 않습니다. 원본 구조·세이브·ID·용량 연구 자료로 보존하며, GBA 리메이크에 필요한 내용만 새 런타임 설계로 옮깁니다.
 
-### Save 확장 원칙
-
-원본 Game Boy save를 그 자리에서 억지로 확장하지 않습니다.
-
-```text
-original 32 KiB Blue SRAM
-        ↓
-legacy parser / validation
-        ↓
-canonical import model
-        ↓
-BLUE GBA runtime save
-```
-
-원본 save는 import source로 취급하며 raw bytes와 원래 ID 의미를 보존합니다.
-
-현재 활성 작업공간에는 실제 `.sav` 파일이 없어 **실제 save sample의 byte layout을 검사했다고 주장하지 않습니다**. ROM header가 요구하는 32 KiB SRAM과 공개 Red/Blue save source를 교차 확인해 legacy boundary를 먼저 고정했습니다. 실제 save sample이 접근 가능해지면 `tools/analyze_blue_inputs.py`로 즉시 구조 검증을 추가합니다.
-
-### 대상 엔진 save 기준
-
-현재 engine candidate인 `rh-hideout/pokeemerald-expansion`의 pinned source 기준:
-
-- 128 KiB Flash
-- 4 KiB sector × 32
-- main save slot 14 sectors × 2
-- sector data 3968 bytes
-- SaveBlock3 chunk 116 bytes
-- footer 12 bytes
-
-자세한 근거와 확장 결정은 `docs/ROM_SAVE_EXPANSION_BASIS.md`를 참조합니다.
-
-## 검증
-
-```sh
-python tools/verify_expansion_contract.py
-python tools/analyze_blue_inputs.py path/to/rom.gb path/to/save.sav
-python -m unittest discover -s tests -v
-```
-
-ROM/save 바이너리는 GitHub에 올리지 않습니다.
+ROM 바이너리는 GitHub에 커밋하지 않습니다.
