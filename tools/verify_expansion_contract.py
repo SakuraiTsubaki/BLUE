@@ -15,69 +15,42 @@ def load_json(path: str) -> dict:
 
 def validate() -> list[str]:
     errors: list[str] = []
-
+    capacity = load_json("config/capacity.json")
     limits = load_json("config/expansion_limits.json")
-    save = load_json("config/save_schema.json")
     storage = load_json("config/storage_baseline.json")
+    remake = load_json("config/remake.json")
 
-    contract = limits["persistent_id_contract"]
-    if contract["minimum_width_bits"] < 16:
-        errors.append("persistent IDs must be at least 16-bit")
-    if contract["reserved_invalid_id"] != 0xFFFF:
-        errors.append("0xFFFF must remain reserved invalid ID")
-    if contract["allocation"] != "append-only" or contract["renumber_existing_ids"]:
-        errors.append("persistent ID allocation must remain append-only without renumbering")
+    if capacity["runtime"] != "original-game-boy-rom":
+        errors.append("BLUE runtime must remain the original Game Boy ROM")
+    if remake.get("gbaEngineDependency") is not False:
+        errors.append("BLUE must not depend on a GBA/Emerald engine")
 
-    ns = limits["namespace_policy"]
-    if ns["fixed_preallocated_generation_sized_tables"]:
-        errors.append("generation-sized fixed tables must remain disabled")
-    if ns["hardcoded_generation_count_as_abi"]:
-        errors.append("generation count must not become a storage ABI")
+    expanded = capacity["expanded"]
+    if expanded["mapper"] != "MBC5+RAM+BATTERY":
+        errors.append("expanded mapper must be MBC5+RAM+BATTERY")
+    if expanded["rom_bytes"] != 0x800000 or expanded["rom_banks"] != 512:
+        errors.append("expanded ROM must be 8 MiB / 512 banks")
+    if expanded["sram_bytes"] != 0x20000 or expanded["sram_banks"] != 16:
+        errors.append("expanded SRAM must be 128 KiB / 16 banks")
 
-    if limits.get("schema_version", 0) >= 3:
-        runtime = limits.get("runtime_pinned_engine_budget", {})
-        expected = {
-            "species_capacity": 1 << runtime.get("species_bits", 0),
-            "held_item_capacity": 1 << runtime.get("held_item_bits", 0),
-            "move_capacity": 1 << runtime.get("move_bits", 0),
-            "tera_type_capacity": 1 << runtime.get("tera_type_bits", 0),
-        }
-        for key, value in expected.items():
-            if runtime.get(key) != value:
-                errors.append(f"runtime {key} does not match audited bit width")
-        if runtime.get("boxpokemon_bytes") != 80:
-            errors.append("BoxPokemon runtime save record must remain 80 bytes")
-    elif ns.get("capacity_numbers_before_engine_audit") != "forbidden":
-        errors.append("capacity numbers must not be guessed before engine audit")
+    if limits["rom"]["bank_id_bits"] != 9:
+        errors.append("MBC5 ROM bank namespace must expose 9 bits")
+    if limits["persistent_id_contract"]["minimum_width_bits"] < 16:
+        errors.append("expanded persistent IDs must be at least 16-bit")
 
     legacy = storage["legacy_blue"]["battery_sram"]
-    if legacy["raw_bytes"] != 32768 or legacy["bank_bytes"] != 8192 or legacy["bank_count"] != 4:
-        errors.append("legacy Blue SRAM boundary must remain 32 KiB / four 8 KiB banks")
-
-    flash = storage["target_gba_engine"]["flash"]
-    if flash["sector_size"] * flash["sector_count"] != 131072:
-        errors.append("GBA target flash must resolve to 128 KiB")
-    if flash["sector_data_bytes"] + flash["saveblock3_chunk_bytes"] + flash["sector_footer_bytes"] != flash["sector_size"]:
-        errors.append("GBA sector components do not add up to one sector")
-
-    policy = storage["blue_policy"]
-    if policy["extend_legacy_gb_save_in_place"]:
-        errors.append("legacy GB save must not be extended in place")
-
-    if save["legacy_import"]["expected_bytes_from_rom_header"] != legacy["raw_bytes"]:
-        errors.append("save schema legacy size disagrees with ROM-derived SRAM size")
-    if save["runtime_target"]["flash_bytes"] != flash["sector_size"] * flash["sector_count"]:
-        errors.append("runtime save schema disagrees with engine storage baseline")
+    if (legacy["raw_bytes"], legacy["bank_bytes"], legacy["bank_count"]) != (32768, 8192, 4):
+        errors.append("legacy save boundary must stay 32 KiB / four 8 KiB banks")
 
     with (ROOT / "research" / "blue-rom-baseline.csv").open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
     if len(rows) != 6:
-        errors.append("expected six verified Blue ROM baseline rows")
+        errors.append("expected all six verified BLUE ROM profiles")
     for row in rows:
         if row["ram_size_code"] != "0x03" or int(row["ram_bytes"]) != 32768:
-            errors.append(f"{row['release_id']}: unexpected cartridge RAM boundary")
+            errors.append(f"{row['release_id']}: unexpected legacy SRAM boundary")
         if row["checksums_valid"].lower() != "true":
-            errors.append(f"{row['release_id']}: ROM checksums are not marked valid")
+            errors.append(f"{row['release_id']}: ROM checksum baseline is not valid")
 
     return errors
 
@@ -88,7 +61,7 @@ def main() -> int:
         for error in errors:
             print(f"ERROR: {error}")
         return 1
-    print("BLUE ROM/save-grounded expansion contract: OK")
+    print("BLUE original-ROM Generation-10 expansion contract: OK")
     return 0
 
 

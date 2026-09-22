@@ -1,42 +1,28 @@
 {
-  "schema_version": 2,
-  "legacy_import": {
-    "format": "pokemon-blue-raw-battery-sram",
-    "expected_bytes_from_rom_header": 32768,
-    "bank_count": 4,
+  "schema_version": 3,
+  "runtime": "original-game-boy-rom",
+  "legacy": {
+    "bytes": 32768,
+    "banks": 4,
     "bank_bytes": 8192,
-    "in_place_extension": false,
-    "exact_layout_verified_from_actual_save_samples": false,
-    "preserve_raw_source": true,
-    "preserve_unknown_bytes": true
+    "preserve_byte_for_byte": true,
+    "exact_regional_layout_status": "pending-actual-save-samples"
   },
-  "runtime_target": {
-    "format_family": "pokeemerald-expansion-sector-save",
-    "flash_bytes": 131072,
-    "sector_bytes": 4096,
-    "sector_count": 32,
-    "main_slots": 2,
-    "sectors_per_main_slot": 14,
-    "sector_payload": {
-      "normal_data_bytes": 3968,
-      "saveblock3_chunk_bytes": 116,
-      "footer_bytes": 12
-    }
+  "extension": {
+    "target_bytes": 131072,
+    "target_banks": 16,
+    "first_extension_bank": 4,
+    "last_extension_bank": 15,
+    "magic": "BLU10EXT",
+    "schema_version": 1,
+    "fill_byte": 255
   },
-  "migration": {
-    "path": "legacy-blue-sram -> canonical-import-model -> gba-runtime-save",
-    "must_be_explicit": true,
-    "must_be_reversible_to_preserved_source_bytes": true,
-    "numeric_ids_must_not_be_silently_reinterpreted": true,
-    "regional_source_identity_must_be_recorded": true,
-    "current_migration_version": 0,
-    "status": "waiting-for-actual-save-sample-byte-layout"
-  },
-  "future_content": {
-    "save_layout_versioning_required": true,
-    "registry_versioning_required": true,
-    "new_content_must_not_change_existing_serialized_id_meaning": true,
-    "raw_c_struct_dump_as_new_extension_format": false,
-    "saveblock_free_space_must_be_measured_before_adding_fields": true
+  "persistent_ids": {
+    "species_bits": 16,
+    "form_bits": 16,
+    "move_bits": 16,
+    "item_bits": 16,
+    "ability_bits": 16,
+    "type_bits": 16
   }
 }

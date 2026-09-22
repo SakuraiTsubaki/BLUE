@@ -1,0 +1,19 @@
+profile,mapper,sha256,opcode,target,count,interpretation
+ao-jp,MBC1+RAM+BATTERY,71a70e5f77c109177d21c998310ffe01a68e8cd2f41e72e7129093b890c7d3d1,EA,0x0000,29,RAM-enable range exact-address pattern
+ao-jp,MBC1+RAM+BATTERY,71a70e5f77c109177d21c998310ffe01a68e8cd2f41e72e7129093b890c7d3d1,EA,0x2000,89,MBC1 ROM-bank low / MBC5 ROM-bank low exact-address pattern
+ao-jp,MBC1+RAM+BATTERY,71a70e5f77c109177d21c998310ffe01a68e8cd2f41e72e7129093b890c7d3d1,EA,0x3000,0,MBC5 ninth ROM-bank bit exact-address pattern
+ao-jp,MBC1+RAM+BATTERY,71a70e5f77c109177d21c998310ffe01a68e8cd2f41e72e7129093b890c7d3d1,EA,0x4000,19,MBC1 high/RAM-bank register exact-address pattern
+ao-jp,MBC1+RAM+BATTERY,71a70e5f77c109177d21c998310ffe01a68e8cd2f41e72e7129093b890c7d3d1,EA,0x6000,25,MBC1 mode register exact-address pattern
+blue-us-eu,MBC3+RAM+BATTERY,2a951313c2640e8c2cb21f25d1db019ae6245d9c7121f754fa61afd7bee6452d,EA,0x0000,30,RAM-enable range exact-address pattern
+blue-us-eu,MBC3+RAM+BATTERY,2a951313c2640e8c2cb21f25d1db019ae6245d9c7121f754fa61afd7bee6452d,EA,0x2000,91,MBC3 ROM-bank / MBC5 ROM-bank low exact-address pattern
+blue-us-eu,MBC3+RAM+BATTERY,2a951313c2640e8c2cb21f25d1db019ae6245d9c7121f754fa61afd7bee6452d,EA,0x3000,0,MBC5 ninth ROM-bank bit exact-address pattern
+blue-us-eu,MBC3+RAM+BATTERY,2a951313c2640e8c2cb21f25d1db019ae6245d9c7121f754fa61afd7bee6452d,EA,0x4000,19,MBC3 RAM/RTC select / MBC5 RAM-bank exact-address pattern
+blue-us-eu,MBC3+RAM+BATTERY,2a951313c2640e8c2cb21f25d1db019ae6245d9c7121f754fa61afd7bee6452d,EA,0x6000,25,MBC3 latch range exact-address pattern; control-flow verification required
+blue-fr,MBC5+RAM+BATTERY,73dee67befed0c39cd0a6ed53a98ff5b98b3bddc3e7a0dae1d982776a4d0889b,EA,0x2000,91,MBC5 ROM-bank low exact-address pattern
+blue-de,MBC5+RAM+BATTERY,2cfec2223090dc9f544aa36c99c48801be5018757a1366b88d8f40739541458e,EA,0x2000,91,MBC5 ROM-bank low exact-address pattern
+blue-it,MBC5+RAM+BATTERY,e197c7535135a516fe9bf92cf7821c9f72926bf90fce3a2a5742d1b0b6a0564b,EA,0x2000,91,MBC5 ROM-bank low exact-address pattern
+blue-es,MBC5+RAM+BATTERY,31317f74fed2935dfc5fbb6ada766cf8515949c85c6c6e8d32d0f752b85b8f9e,EA,0x2000,91,MBC5 ROM-bank low exact-address pattern
+blue-fr,MBC5+RAM+BATTERY,73dee67befed0c39cd0a6ed53a98ff5b98b3bddc3e7a0dae1d982776a4d0889b,EA,0x3000,0,MBC5 ROM-bank high-bit exact-address pattern
+blue-de,MBC5+RAM+BATTERY,2cfec2223090dc9f544aa36c99c48801be5018757a1366b88d8f40739541458e,EA,0x3000,0,MBC5 ROM-bank high-bit exact-address pattern
+blue-it,MBC5+RAM+BATTERY,e197c7535135a516fe9bf92cf7821c9f72926bf90fce3a2a5742d1b0b6a0564b,EA,0x3000,0,MBC5 ROM-bank high-bit exact-address pattern
+blue-es,MBC5+RAM+BATTERY,31317f74fed2935dfc5fbb6ada766cf8515949c85c6c6e8d32d0f752b85b8f9e,EA,0x3000,0,MBC5 ROM-bank high-bit exact-address pattern

@@ -1,0 +1,32 @@
+schema_version: 1
+project: BLUE
+legacy_bytes: 0x8000
+expanded_bytes: 0x20000
+legacy_banks_8k: 4
+expanded_banks_8k: 16
+
+profiles:
+  ao-jp:
+    source_rom: ao-jp
+    exact_offsets: pending-actual-save-sample
+  blue-us-eu:
+    source_rom: blue-us-eu
+    exact_offsets: pending-actual-save-sample
+  blue-fr:
+    source_rom: blue-fr
+    exact_offsets: pending-actual-save-sample
+  blue-de:
+    source_rom: blue-de
+    exact_offsets: pending-actual-save-sample
+  blue-it:
+    source_rom: blue-it
+    exact_offsets: pending-actual-save-sample
+  blue-es:
+    source_rom: blue-es
+    exact_offsets: pending-actual-save-sample
+
+extension:
+  banks: 0x04-0x0F
+  header_bank: 0x04
+  magic: BLU10EXT
+  schema_version: 1

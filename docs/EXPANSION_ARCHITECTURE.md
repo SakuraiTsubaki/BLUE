@@ -1,97 +1,82 @@
-# BLUE Expansion Architecture
+# BLUE Original-ROM Expansion Architecture
 
-## Goal
+## Runtime
 
-BLUE must accept later-generation content without another fundamental ID/save rewrite. The expansion layer therefore treats generation labels as data provenance, not as storage ABI.
+BLUE remains a Game Boy program. GBA/Emerald is not the runtime.
 
-This document defines the contract before game source import begins.
+All verified source ROMs are migrated toward one cartridge capability target:
 
-## 1. Stable IDs
+- MBC5+RAM+BATTERY
+- 8 MiB ROM
+- 128 KiB SRAM
 
-Persistent content IDs use fixed-width 16-bit storage.
+## Source families
 
-Rules:
+### Japanese Ao
 
-1. ID 0 is the NONE / absent value where the namespace needs one.
-2. 0xFFFF is invalid/reserved.
-3. Existing IDs are never renumbered.
-4. Deleted/retired IDs become tombstones; they are not recycled.
-5. New content is appended or mapped through an explicit registry.
-6. Capacity values are namespace ceilings, not instructions to allocate full-size arrays.
+- 512 KiB
+- MBC1+RAM+BATTERY
+- 32 ROM banks
+- 32 KiB SRAM
 
-The concrete ceilings live in `config/expansion_limits.json`.
+Legacy ROM banks: `0x000–0x01F`.
 
-## 2. Species and forms
+### English Blue
 
-Canonical BLUE data does not flatten every form into an unrelated species identity.
+- 1 MiB
+- MBC3+RAM+BATTERY
+- 64 ROM banks
+- 32 KiB SRAM
 
-Persistent identity is:
+Legacy ROM banks: `0x000–0x03F`.
 
-```text
-(species_id, form_id)
-```
+### Continental European Blue
 
-This supports regional forms, gender forms, battle forms, temporary forms and future forms without requiring a global species-ID rewrite.
+French, German, Italian, and Spanish inputs are already MBC5+RAM+BATTERY:
 
-An upstream engine may internally represent a form with a dedicated species constant. The integration layer is responsible for mapping that representation to the canonical BLUE pair.
+- 1 MiB
+- 64 ROM banks
+- 32 KiB SRAM
 
-Variants driven by personality, pattern seed or other parameters do not have to consume thousands of form IDs.
+Legacy ROM banks: `0x000–0x03F`.
 
-## 3. Content generation vs mechanics generation
+## Preservation
 
-These are separate axes.
+The ROM expansion tool copies the complete legacy image and changes only cartridge type, ROM size code, RAM size code, header checksum, and global checksum.
 
-Examples:
+New banks are initialized to `0xFF`.
 
-- A Generation I map/story can use a current battle-mechanics profile.
-- A compatibility profile can preserve an older mechanic without changing species/item IDs.
-- A future generation can append content without changing the save schema merely because its generation number changed.
+For saves, SRAM banks `0x00–0x03` are copied byte-for-byte. Banks `0x04–0x0F` are new expansion storage.
 
-No code should use `GEN_10` (or any generation constant) as an array bound or serialized-format width.
+## Mapper migration
 
-## 4. Tables
+Changing a cartridge header is not enough for MBC1/MBC3 source code.
 
-Counts are generated from actual registries.
+A direct byte-pattern census found:
 
-Do not use generation-sized fixed arrays such as:
+- Japanese Ao: 89 exact `LD (0x2000),A`, 19 exact `LD (0x4000),A`, 25 exact `LD (0x6000),A`;
+- English/international family: 91 exact `LD (0x2000),A`, 19 exact `LD (0x4000),A`, 25 exact `LD (0x6000),A`;
+- no verified ROM contains an exact `LD (0x3000),A` pattern.
 
-```c
-Entry table[GENERATION_X_SPECIES_COUNT];
-```
+These are byte-pattern counts, not proof that every hit is executable.
 
-Prefer generated tables and explicit counts:
+Before using ROM bank `0x100` or above, BLUE must introduce a verified far-bank routine that writes both MBC5 ROM-bank registers:
 
-```c
-extern const struct Entry gEntries[];
-extern const u16 gEntriesCount;
-```
+- low 8 bits: `0x2000–0x2FFF`;
+- ninth bit: `0x3000–0x3FFF`.
 
-Optional per-species/per-form data may be sparse.
+For Ao/English profiles, every legacy mapper-control path must be classified before mapper migration is declared complete.
 
-## 5. Save compatibility
+## Expanded IDs
 
-The extended save format is versioned independently from the game build.
+Legacy Gen I byte IDs remain source-local IDs.
 
-Persistent data is encoded field-by-field rather than by dumping compiler C structs. Every extended save block carries a schema version and content-registry version, and migrations are explicit.
+New expansion records use 16-bit IDs for species, form, move, item, ability, type, map/location, trainer class, and evolution method.
 
-Appending a new species, move, item, ability or form must not change the meaning of an existing save value.
+A far ROM reference stores bank in 16 bits (valid `0x000–0x1FF`) plus a 16-bit CPU address.
 
-See `config/save_schema.json`.
+## Generation 10
 
-## 6. Engine base
+No unreleased count is guessed.
 
-The initial modern-engine candidate is pinned in `manifests/engine-base.json`.
-
-The pin is a reproducibility baseline, not a permanent prohibition on upgrades. Updating the expansion engine requires:
-
-- passing the expansion contract validator;
-- reviewing persistent-ID mapping;
-- reviewing save migration;
-- verifying BLUE overlays still apply;
-- recording the new upstream commit.
-
-## 7. What this foundation does not claim
-
-This commit does not implement future-generation content and does not claim knowledge of unreleased species, moves, mechanics or formats.
-
-It prevents those additions from forcing another foundational rewrite.
+8 MiB ROM + 128 KiB SRAM + 16-bit content IDs provide the structural envelope. Actual tables are appended only when official data exists.

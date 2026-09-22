@@ -1,59 +1,16 @@
 {
-  "schema_version": 3,
-  "basis": "ROM/save/engine evidence first; runtime capacities are derived from the pinned BoxPokemon layout, not predicted Generation 10 counts",
+  "schema_version": 4,
+  "runtime": "original-game-boy-rom",
+  "mapper_target": "MBC5",
+  "rom": {"bytes": 8388608, "banks_16k": 512, "bank_id_bits": 9},
+  "sram": {"bytes": 131072, "banks_8k": 16, "legacy_banks": [0, 3], "extension_banks": [4, 15]},
   "persistent_id_contract": {
     "minimum_width_bits": 16,
     "none_id": 0,
     "reserved_invalid_id": 65535,
     "allocation": "append-only",
     "renumber_existing_ids": false,
-    "removed_ids": "tombstone",
-    "runtime_compaction_allowed_only_with_explicit_translation": true
+    "removed_ids": "tombstone"
   },
-  "species_form_model": {
-    "canonical_representation": "composite",
-    "fields": ["species_id", "form_id"],
-    "minimum_species_id_width_bits": 16,
-    "minimum_form_id_width_bits": 16,
-    "upstream_runtime_representation": "form-species ID",
-    "bridge_required": true
-  },
-  "runtime_pinned_engine_budget": {
-    "boxpokemon_abi_version": 2,
-    "boxpokemon_bytes": 80,
-    "species_bits": 13,
-    "species_capacity": 8192,
-    "held_item_bits": 12,
-    "held_item_capacity": 4096,
-    "move_bits": 12,
-    "move_capacity": 4096,
-    "tera_type_bits": 5,
-    "tera_type_capacity": 32,
-    "source": "config/runtime_id_budget.json"
-  },
-  "namespace_policy": {
-    "fixed_preallocated_generation_sized_tables": false,
-    "hardcoded_generation_count_as_abi": false,
-    "derive_runtime_counts_from_imported_registry": true,
-    "audit_required_namespaces": [
-      "species",
-      "forms",
-      "moves",
-      "abilities",
-      "items",
-      "types",
-      "natures",
-      "evolution_methods",
-      "trainer_classes",
-      "maps",
-      "flags",
-      "vars",
-      "music",
-      "sound_effects"
-    ]
-  },
-  "next_gate": {
-    "name": "patched-engine-build-and-save-abi-versioning",
-    "required_before_declaring_runtime_save_compatibility": true
-  }
+  "generation_10_policy": "reserve structural capacity; never invent unreleased content counts"
 }

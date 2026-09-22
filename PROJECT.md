@@ -2,25 +2,37 @@
 
 ## Canonical direction
 
-ポケットモンスター 青를 **Game Boy Advance / Generation III 계열 기반의 현대화 리메이크**로 재구축한다.
+ポケットモンスター 青 / Pokémon Blue를 **원본 Game Boy ROM 자체에서 확장**한다.
 
-이 문서는 현재 프로젝트 방향의 정본이다. 저장소에 남아 있는 과거 GB/GBC 확장·mapper·legacy-save 설계는 원본 분석 자료로 보존하되, 최종 실행 엔진 기준으로 사용하지 않는다.
+GBA, Emerald, pokeemerald-expansion은 BLUE의 런타임 기반이 아니다.
 
-## Original baseline
+## Original baselines
 
-- `Pocket Monsters - Ao (Japan) (SGB Enhanced).gb`
+현재 직접 검증한 입력은 6개다.
 
-원본 조사 저장소: `SakuraiTsubaki/PocketMonsters-Ao-Disassembly`
+- Japanese Pocket Monsters Ao
+- English Blue (USA/Europe)
+- French Blue
+- German Blue
+- Italian Blue
+- Spanish Blue
 
-모든 일본판 revision은 독립 입력으로 조사하고 차이를 보존한다.
+각 ROM은 독립 provenance를 유지한다. 일본판은 원전/기준 언어이고, 다른 지역판은 각자의 ROM 구조와
+현지화 차이를 보존한다.
 
-## Runtime baseline
+## Runtime target
 
-- Host: Game Boy Advance
-- Engine family: Generation III-derived
-- Modern core reference: `rh-hideout/pokeemerald-expansion@75b806a3ab57a81ff1eb6179288981f0b3cc3050`
-- Coordination/reference workspace: `SakuraiTsubaki/EMERALD`
+- CPU/platform: original Game Boy family runtime
+- cartridge target: MBC5+RAM+BATTERY
+- maximum standard MBC5 ROM image: 8 MiB
+- expanded battery SRAM: 128 KiB
+- SGB flag: source value preserved
+- original ROM/SAV bytes: preservation boundary maintained
 
-## Remake rule
+## Generation 10 rule
 
-원작의 지역·스토리·이벤트·NPC·버전 고유성은 보존한다. 포켓몬 시스템은 현재 검증 가능한 최신 공식 기준으로 현대화한다. 미출시/미검증 세대 데이터는 추측하지 않는다.
+Generation 10의 미공개 내용을 추측하지 않는다.
+대신 새 콘텐츠가 공개되어도 다시 저장 형식 전체를 갈아엎지 않도록 확장 영역의 ID와 far reference를
+미리 넓힌다.
+
+새 전역 content IDs는 16-bit이며 기존 Gen I byte IDs는 source-local legacy ID로 남긴다.

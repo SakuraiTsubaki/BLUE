@@ -1,80 +1,46 @@
-# Future / Generation 10 Readiness
+# Generation 10 Readiness — BLUE
 
-BLUE does not invent unreleased content. Readiness means the GBA runtime can accept appended official content without another foundational rewrite.
+Readiness means reserving enough address/ID/storage structure before future official content arrives.
 
-## Phase 0 — evidence baseline
+## Cartridge
 
-- [x] six Blue-family ROMs hashed and header-validated
-- [x] original cartridge save boundary established from ROM headers: 32 KiB SRAM
-- [x] mapper differences recorded: MBC1 / MBC3 / MBC5
-- [x] target GBA engine save storage inspected: 128 KiB sector flash
-- [x] legacy GB save and GBA runtime save separated architecturally
-- [ ] actual Japanese Blue save sample inspected
-- [ ] actual English Blue save sample inspected
-- [ ] French/German/Italian/Spanish save samples inspected and compared
+- [x] six Blue ROM baselines verified
+- [x] source mapper families identified: MBC1 / MBC3 / MBC5
+- [x] target mapper selected: MBC5
+- [x] target ROM size selected: 8 MiB / 512 banks
+- [x] target SRAM selected: 128 KiB / 16 banks
+- [x] Japanese original ROM preservation range defined
+- [x] international original ROM preservation range defined
+- [x] mapper-write byte-pattern census recorded
+- [ ] mapper-write hits classified by executable control flow
+- [ ] MBC1 -> MBC5 compatibility routines implemented
+- [ ] MBC3 -> MBC5 compatibility routines implemented
+- [ ] 9-bit MBC5 far-bank switch routine implemented and tested
 
-## Phase 1 — engine audit
+## IDs
 
-- [x] pinned runtime species count measured: 1,573
-- [x] pinned move count measured: 935
-- [x] pinned ability count measured: 320
-- [x] pinned item count measured: 874
-- [x] BoxPokemon Species serialization audited: 11-bit bottleneck found
-- [x] BoxPokemon held-item serialization audited: 10-bit bottleneck found
-- [x] BoxPokemon move serialization audited: 11-bit bottleneck found
-- [x] ability persistence model audited: 2-bit slot, concrete ability derived from species/form
-- [x] type/Tera serialization audited: 5 bits
-- [x] SaveBlock2 measured: 3,884 / 3,968 bytes, 84 bytes free
-- [x] SaveBlock1 hard ceiling measured: 15,872 bytes
-- [x] PokemonStorage hard ceiling measured: 35,712 bytes
-- [x] SaveBlock3 hard ceiling measured: 1,624 bytes
-- [x] zero-growth BoxPokemon widening designed
-- [x] BoxPokemon runtime budget: Species 13 / Item 12 / Move 12 bits
-- [ ] patched upstream full ARM build passes
-- [ ] exact compiled SaveBlock1 free bytes measured
-- [ ] exact compiled PokemonStorage free bytes measured
-- [ ] exact compiled SaveBlock3 free bytes measured
-- [ ] battle scripts audited for implicit 8-bit truncation
-- [ ] menu/UI selectors audited for implicit 8-bit truncation
-- [ ] Pokédex flags/count calculations audited
+- [x] new global species ID: 16-bit
+- [x] new form ID: 16-bit
+- [x] new move ID: 16-bit
+- [x] new item ID: 16-bit
+- [x] new ability ID: 16-bit
+- [x] new type ID: 16-bit
+- [x] new map/location/trainer/evolution IDs: 16-bit
+- [x] legacy Gen I byte IDs kept as source-local compatibility values
 
-## Phase 2 — stable registries
+## Save
 
-- [ ] define stable species registry
-- [ ] define canonical species + form mapping table
-- [ ] define move registry
-- [ ] define ability registry
-- [ ] define item registry
-- [ ] define type registry
-- [ ] preserve existing IDs; append/tombstone only
-- [ ] generate runtime counts from registries
+- [x] physical legacy save boundary: 32 KiB / 4 banks
+- [x] expansion boundary: banks 0x04–0x0F
+- [x] 128 KiB save scaffold defined
+- [x] first 32 KiB preserved byte-for-byte by expansion tool
+- [ ] Japanese Ao real save sample audited
+- [ ] English Blue real save sample audited
+- [ ] French/German/Italian/Spanish real save samples audited
+- [ ] region-specific legacy checksum parsers added
 
-## Phase 3 — runtime save ABI
+## Content
 
-- [x] BoxPokemon ABI v2 defined without record-size growth
-- [ ] runtime save ABI marker/version integrated
-- [ ] unpatched expansion-save migration fixture added
-- [ ] patched save round-trip regression fixture added
+Generation 10 species/moves/items/abilities are not guessed.
 
-## Phase 4 — legacy Blue save import
-
-- [ ] identify exact Japanese Blue save offsets/checksums from real sample
-- [ ] identify exact localized differences from real samples
-- [ ] parse player / party / dex / current box
-- [ ] parse all PC boxes
-- [ ] validate legacy checksums
-- [ ] retain unparsed bytes
-- [ ] map Gen I IDs into canonical BLUE registries
-- [ ] migration fixtures and round-trip provenance tests
-
-## Future content gate
-
-When new official content exists:
-
-1. append canonical registry entries;
-2. verify they fit the current runtime encoding budget;
-3. if the budget is insufficient, change the runtime ABI explicitly rather than truncating;
-4. update mechanics tables;
-5. add assets/localization;
-6. run the patched ARM build and save regression tests;
-7. never renumber an old persistent ID.
+When official data exists, append it into the widened registries and allocate ROM/SRAM records without renumbering existing expanded IDs.

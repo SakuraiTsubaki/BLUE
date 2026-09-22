@@ -1,28 +1,28 @@
-# Remake Policy
+# BLUE Original-ROM Expansion Policy
 
-## Preserve from the original
+BLUE is not a GBA remake runtime.
 
-- 지역과 스토리의 핵심 구조
-- NPC와 이벤트의 의미 및 진행 조건
-- 작품별/버전별 고유 요소
-- 일본판 각 revision의 차이와 수정 이력
-- 원본 트레이너·야생·아이템·대사·맵의 출처 기록
+## Preserve
 
-## Modernize to the latest verified official rules
+- each verified original ROM as independent provenance;
+- Japanese original as the master reference;
+- original story, maps, scripts, events, graphics, audio, and version differences;
+- original 32 KiB save bytes during migration;
+- original SGB capability flag.
 
-- 포켓몬 종족 데이터와 타입
-- 특성
-- 기술/기술 효과와 물리·특수 분리
-- 진화 조건과 후대 진화형
-- 리전폼·리전진화·검증된 폼 시스템
-- 아이템 효과
-- 현대 전투 규칙과 육성/편의 기능
-- 최신 공식 명칭 체계
+## Expand
 
-## Engine boundary
+- cartridge mapper capability to MBC5 where needed;
+- ROM address space to 8 MiB;
+- battery SRAM to 128 KiB;
+- new global content IDs to 16-bit;
+- far references to cover all 512 ROM banks.
 
-최종 실행 대상은 GBA다. GB/GBC 원본 ROM 구조, mapper, SRAM 형식은 원본 분석·가져오기 근거로만 사용한다. 리메이크 런타임은 Generation III 계열의 현대화 코어를 사용한다.
+## Compatibility
 
-## Future-content rule
+Legacy Gen I structures are not silently reinterpreted as widened structures.
+Compatibility adapters translate legacy byte IDs into expanded registries.
 
-공개·검증된 공식 데이터만 반영한다. 미출시 세대의 종·기술·아이템·특성·메커니즘은 이름이나 수량을 추측해서 넣지 않는다.
+## Future data
+
+Only verified official content is added. Generation 10 capacity is structural; unreleased content is not invented.

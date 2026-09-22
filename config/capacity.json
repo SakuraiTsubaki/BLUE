@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "target": "BLUE",
+  "policy_target_generation": 10,
+  "runtime": "original-game-boy-rom",
+  "source_profiles": {
+    "ao-jp": {"mapper": "MBC1+RAM+BATTERY", "cartridge_type": 3, "rom_bytes": 524288, "rom_banks": 32, "sram_bytes": 32768, "sram_banks": 4},
+    "blue-us-eu": {"mapper": "MBC3+RAM+BATTERY", "cartridge_type": 19, "rom_bytes": 1048576, "rom_banks": 64, "sram_bytes": 32768, "sram_banks": 4},
+    "blue-fr": {"mapper": "MBC5+RAM+BATTERY", "cartridge_type": 27, "rom_bytes": 1048576, "rom_banks": 64, "sram_bytes": 32768, "sram_banks": 4},
+    "blue-de": {"mapper": "MBC5+RAM+BATTERY", "cartridge_type": 27, "rom_bytes": 1048576, "rom_banks": 64, "sram_bytes": 32768, "sram_banks": 4},
+    "blue-it": {"mapper": "MBC5+RAM+BATTERY", "cartridge_type": 27, "rom_bytes": 1048576, "rom_banks": 64, "sram_bytes": 32768, "sram_banks": 4},
+    "blue-es": {"mapper": "MBC5+RAM+BATTERY", "cartridge_type": 27, "rom_bytes": 1048576, "rom_banks": 64, "sram_bytes": 32768, "sram_banks": 4}
+  },
+  "expanded": {
+    "mapper": "MBC5+RAM+BATTERY",
+    "cartridge_type": 27,
+    "rom_size_code": 8,
+    "rom_bytes": 8388608,
+    "rom_bank_bytes": 16384,
+    "rom_banks": 512,
+    "rom_bank_bits": 9,
+    "ram_size_code": 4,
+    "sram_bytes": 131072,
+    "sram_bank_bytes": 8192,
+    "sram_banks": 16,
+    "preserve_sgb_flag": true
+  },
+  "id_width_bits": {
+    "species": 16,
+    "form": 16,
+    "move": 16,
+    "item": 16,
+    "ability": 16,
+    "type": 16,
+    "location": 16,
+    "map": 16,
+    "trainer_class": 16,
+    "evolution_method": 16
+  },
+  "far_reference": {"bank_bits": 9, "bank_storage_bits": 16, "address_bits": 16, "storage_bytes": 4},
+  "layout": {
+    "ao-jp": {"legacy_rom_banks": [0, 31], "expansion_rom_banks": [32, 511]},
+    "international": {"legacy_rom_banks": [0, 63], "expansion_rom_banks": [64, 511]},
+    "legacy_sram_banks": [0, 3],
+    "expansion_sram_banks": [4, 15]
+  },
+  "invariants": [
+    "original-game-boy-rom-is-runtime",
+    "no-gba-or-emerald-engine-dependency",
+    "each-region-keeps-independent-provenance",
+    "legacy-byte-ids-are-not-global-expanded-ids",
+    "legacy-rom-region-is-preserved-except-required-header-fields",
+    "first-32kib-save-is-preserved-byte-for-byte",
+    "new-content-does-not-depend-on-unreleased-generation-10-counts"
+  ]
+}
