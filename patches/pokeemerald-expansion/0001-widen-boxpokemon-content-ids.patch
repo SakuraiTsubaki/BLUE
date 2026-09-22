@@ -1,0 +1,90 @@
+From 0000000000000000000000000000000000000001 Mon Sep 17 00:00:00 2001
+From: SakuraiTsubaki <nokang3@naver.com>
+Date: Wed, 23 Sep 2026 01:00:00 +0900
+Subject: [PATCH] Widen BoxPokemon content IDs without growing save records
+
+BLUE needs headroom for future official species/forms, held items, and moves.
+Use the spare bits already present in the two 12-byte secure substructures so
+BoxPokemon remains 80 bytes and Pokemon remains 100 bytes.
+
+Runtime capacities after this patch:
+- species/form-species ID: 13 bits (0..8191)
+- held item ID: 12 bits (0..4095)
+- move ID: 12 bits (0..4095)
+- tera type: 5 bits (unchanged)
+- evolution tracker: 5 + 5 bits (unchanged)
+
+The encrypted substructure bit layout changes. Existing saves produced by the
+unpatched engine require migration; BLUE applies this before its runtime save
+format is considered stable.
+---
+ include/pokemon.h | 27 ++++++++++++++-------------
+ src/pokemon.c     |  7 +++++++
+ 2 files changed, 21 insertions(+), 13 deletions(-)
+
+diff --git a/include/pokemon.h b/include/pokemon.h
+index 0000000..0000000 100644
+--- a/include/pokemon.h
++++ b/include/pokemon.h
+@@ -131,10 +131,10 @@ enum MonData {
+ 
+ struct PokemonSubstruct0
+ {
+-    enum Species species:11; // 2047 species.
+-    enum Type teraType:5; // 30 types.
+-    enum Item heldItem:10; // 1023 items.
+-    u16 unused_02:6;
++    u32 species:13; // 8191 runtime species/form-species IDs.
++    u32 teraType:5; // 31 non-zero/encoded type values.
++    u32 heldItem:12; // 4095 item IDs.
++    u32 unused_00:2;
+     u32 experience:21;
+     u32 nickname11:8; // 11th character of nickname.
+     u32 unused_04:3;
+@@ -147,16 +147,17 @@ struct PokemonSubstruct0
+ 
+ struct PokemonSubstruct1
+ {
+-    enum Move move1:11; // 2047 moves.
+-    u16 evolutionTracker1:5;
+-    enum Move move2:11; // 2047 moves.
+-    u16 evolutionTracker2:5;
+-    enum Move move3:11; // 2047 moves.
+-    u16 unused_04:5;
+-    enum Move move4:11; // 2047 moves.
+-    u16 unused_06:3;
+-    u16 hyperTrainedHP:1;
+-    u16 hyperTrainedAttack:1;
++    u32 move1:12; // 4095 move IDs.
++    u32 evolutionTracker1:5;
++    u32 move2:12; // 4095 move IDs.
++    u32 unused_00:3;
++    u32 move3:12; // 4095 move IDs.
++    u32 evolutionTracker2:5;
++    u32 move4:12; // 4095 move IDs.
++    u32 unused_04:1;
++    u32 hyperTrainedHP:1;
++    u32 hyperTrainedAttack:1;
+     u8 pp1:7; // 127 PP.
+     u8 hyperTrainedDefense:1;
+     u8 pp2:7; // 127 PP.
+diff --git a/src/pokemon.c b/src/pokemon.c
+index 0000000..0000000 100644
+--- a/src/pokemon.c
++++ b/src/pokemon.c
+@@ -764,6 +764,13 @@ UNUSED static const struct BoxPokemon sBoxPokemonConstantsFit =
+     },
+ };
+ 
++STATIC_ASSERT(NUM_SPECIES <= (1 << 13), BlueSpeciesIdExceedsBoxPokemon);
++STATIC_ASSERT(ITEMS_COUNT <= (1 << 12), BlueItemIdExceedsBoxPokemon);
++STATIC_ASSERT(MOVES_COUNT_ALL <= (1 << 12), BlueMoveIdExceedsBoxPokemon);
++STATIC_ASSERT(NUMBER_OF_MON_TYPES <= (1 << 5), BlueTypeIdExceedsBoxPokemon);
++STATIC_ASSERT(sizeof(struct PokemonSubstruct0) == 12, BluePokemonSubstruct0SizeChanged);
++STATIC_ASSERT(sizeof(struct PokemonSubstruct1) == 12, BluePokemonSubstruct1SizeChanged);
++STATIC_ASSERT(sizeof(struct BoxPokemon) == 80, BlueBoxPokemonSizeChanged);
+ STATIC_ASSERT(MAX_LEVEL <= 100, PokemonSubstruct0_experience_PotentiallyTooSmall); // Maximum of ~2 million exp.
+ 
+ static u32 CompressStatus(u32 status)
+-- 
+2.39.5

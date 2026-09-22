@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "rh-hideout/pokeemerald-expansion",
+    "ref": "75b806a3ab57a81ff1eb6179288981f0b3cc3050"
+  },
+  "measured_counts": {
+    "species_num_species": 1573,
+    "moves_count_all": 935,
+    "abilities_count": 320,
+    "items_count": 874,
+    "mon_types_including_none": 21
+  },
+  "pinned_engine_boxpokemon_before_blue_patch": {
+    "bytes": 80,
+    "pokemon_bytes": 100,
+    "species_bits": 11,
+    "species_capacity": 2048,
+    "species_remaining_at_pin": 475,
+    "held_item_bits": 10,
+    "held_item_capacity": 1024,
+    "held_item_remaining_at_pin": 150,
+    "move_bits": 11,
+    "move_capacity": 2048,
+    "move_remaining_at_pin": 1113,
+    "tera_type_bits": 5,
+    "tera_type_capacity": 32,
+    "tera_type_remaining_at_pin": 11,
+    "ability_storage": "ability slot (2 bits) is stored in BoxPokemon; concrete ability ID is derived from species/form data"
+  },
+  "blue_overlay_after_patch": {
+    "boxpokemon_bytes": 80,
+    "pokemon_bytes": 100,
+    "save_record_growth_bytes": 0,
+    "species_bits": 13,
+    "species_capacity": 8192,
+    "species_remaining_at_pin": 6619,
+    "held_item_bits": 12,
+    "held_item_capacity": 4096,
+    "held_item_remaining_at_pin": 3222,
+    "move_bits": 12,
+    "move_capacity": 4096,
+    "move_remaining_at_pin": 3161,
+    "tera_type_bits": 5,
+    "tera_type_capacity": 32,
+    "evolution_tracker_bits": [5, 5],
+    "boxpokemon_abi_version": 2
+  },
+  "save_sector_limits": {
+    "sector_payload_bytes": 3968,
+    "saveblock2_bytes": 3884,
+    "saveblock2_free_bytes": 84,
+    "saveblock1_max_bytes": 15872,
+    "pokemon_storage_max_bytes": 35712,
+    "saveblock3_max_bytes": 1624,
+    "note": "SaveBlock1/PokemonStorage/SaveBlock3 actual free bytes depend on compile-time configuration; BLUE patch deliberately keeps BoxPokemon at 80 bytes so storage growth is zero."
+  },
+  "form_model": {
+    "upstream_runtime": "forms are represented by distinct enum Species/form-species IDs",
+    "blue_canonical": "species_id + form_id",
+    "bridge": "registry maps BLUE composite identity to upstream runtime form-species ID"
+  }
+}
