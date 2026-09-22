@@ -31,17 +31,33 @@ def validate() -> list[str]:
     ns = limits["namespace_policy"]
     if ns["fixed_preallocated_generation_sized_tables"]:
         errors.append("generation-sized fixed tables must remain disabled")
-    if ns["capacity_numbers_before_engine_audit"] != "forbidden":
+    if ns["hardcoded_generation_count_as_abi"]:
+        errors.append("generation count must not become a storage ABI")
+
+    if limits.get("schema_version", 0) >= 3:
+        runtime = limits.get("runtime_pinned_engine_budget", {})
+        expected = {
+            "species_capacity": 1 << runtime.get("species_bits", 0),
+            "held_item_capacity": 1 << runtime.get("held_item_bits", 0),
+            "move_capacity": 1 << runtime.get("move_bits", 0),
+            "tera_type_capacity": 1 << runtime.get("tera_type_bits", 0),
+        }
+        for key, value in expected.items():
+            if runtime.get(key) != value:
+                errors.append(f"runtime {key} does not match audited bit width")
+        if runtime.get("boxpokemon_bytes") != 80:
+            errors.append("BoxPokemon runtime save record must remain 80 bytes")
+    elif ns.get("capacity_numbers_before_engine_audit") != "forbidden":
         errors.append("capacity numbers must not be guessed before engine audit")
 
     legacy = storage["legacy_blue"]["battery_sram"]
     if legacy["raw_bytes"] != 32768 or legacy["bank_bytes"] != 8192 or legacy["bank_count"] != 4:
         errors.append("legacy Blue SRAM boundary must remain 32 KiB / four 8 KiB banks")
 
-    runtime = storage["target_gba_engine"]["flash"]
-    if runtime["sector_size"] * runtime["sector_count"] != 131072:
+    flash = storage["target_gba_engine"]["flash"]
+    if flash["sector_size"] * flash["sector_count"] != 131072:
         errors.append("GBA target flash must resolve to 128 KiB")
-    if runtime["sector_data_bytes"] + runtime["saveblock3_chunk_bytes"] + runtime["sector_footer_bytes"] != runtime["sector_size"]:
+    if flash["sector_data_bytes"] + flash["saveblock3_chunk_bytes"] + flash["sector_footer_bytes"] != flash["sector_size"]:
         errors.append("GBA sector components do not add up to one sector")
 
     policy = storage["blue_policy"]
@@ -50,7 +66,7 @@ def validate() -> list[str]:
 
     if save["legacy_import"]["expected_bytes_from_rom_header"] != legacy["raw_bytes"]:
         errors.append("save schema legacy size disagrees with ROM-derived SRAM size")
-    if save["runtime_target"]["flash_bytes"] != runtime["sector_size"] * runtime["sector_count"]:
+    if save["runtime_target"]["flash_bytes"] != flash["sector_size"] * flash["sector_count"]:
         errors.append("runtime save schema disagrees with engine storage baseline")
 
     with (ROOT / "research" / "blue-rom-baseline.csv").open(newline="", encoding="utf-8") as f:
