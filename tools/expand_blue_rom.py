@@ -11,6 +11,8 @@ import argparse
 import hashlib
 from pathlib import Path
 
+from blue_expansion_layout import install_expansion_metadata
+
 TARGET_SIZE = 0x800000
 TARGET_CART = 0x1B
 TARGET_ROM_SIZE = 0x08
@@ -245,6 +247,7 @@ def expand_rom(data: bytes) -> bytes:
     out = bytearray(data)
     out.extend(b"\xFF" * (TARGET_SIZE - len(out)))
     install_mbc5_runtime(out, data, profile)
+    install_expansion_metadata(out, profile, sha256(data))
 
     out[0x147] = TARGET_CART
     out[0x148] = TARGET_ROM_SIZE
@@ -284,7 +287,7 @@ def main() -> int:
     print(
         f"{profile}: {len(source)} -> {len(expanded)} bytes; "
         f"MBC5 8 MiB / 128 KiB SRAM; FarCall9=0x{FARCALL9_ADDR:04X}; "
-        f"LegacyBank8=0x{LEGACY_BANK8_ADDR:04X}; patched-writes={count}"
+        f"LegacyBank8=0x{LEGACY_BANK8_ADDR:04X}; patched-writes={count}; metadata=installed"
     )
     return 0
 
