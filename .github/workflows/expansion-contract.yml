@@ -14,4 +14,5 @@ jobs:
         with:
           python-version: "3.12"
       - run: python tools/verify_expansion_contract.py
+      - run: python tools/verify_mbc5_runtime.py
       - run: python -m unittest discover -s tests -v

@@ -1,0 +1,28 @@
+profile,target,rom_bank,count,classification,confidence
+ao-jp,0x2000,0,84,home-bank ROM switching and banked-call paths,high
+ao-jp,0x2000,1,2,banked runtime paths,medium
+ao-jp,0x2000,8,3,banked runtime paths,medium
+ao-jp,0x4000,0,3,SRAM/banking helper paths,medium
+ao-jp,0x4000,1,1,sprite/SRAM scratch path,high
+ao-jp,0x4000,15,1,banked SRAM path,medium
+ao-jp,0x4000,28,14,save/PC-box SRAM bank selection,high
+ao-jp,0x6000,1,3,MBC1 mode writes around SRAM scratch access,high
+ao-jp,0x6000,28,22,MBC1 mode writes in save/PC-box code,high
+blue-us-eu,0x2000,0,86,home-bank ROM switching and banked-call paths,high
+blue-us-eu,0x2000,1,2,banked runtime paths,medium
+blue-us-eu,0x2000,8,3,banked runtime paths,medium
+blue-us-eu,0x4000,0,3,SRAM/banking helper paths,medium
+blue-us-eu,0x4000,1,1,sprite/SRAM scratch path,high
+blue-us-eu,0x4000,15,1,banked SRAM path,medium
+blue-us-eu,0x4000,28,14,save/PC-box SRAM bank selection,high
+blue-us-eu,0x6000,1,3,MBC3 latch-range writes inherited around SRAM paths; ignored by MBC5,high
+blue-us-eu,0x6000,28,22,MBC3 latch-range writes in save paths; ignored by MBC5,high
+blue-fr-de-it-es,0x2000,0,86,retail MBC5 home-bank ROM switching paths,high
+blue-fr-de-it-es,0x2000,1,2,retail MBC5 banked runtime paths,high
+blue-fr-de-it-es,0x2000,8,3,retail MBC5 banked runtime paths,high
+blue-fr-de-it-es,0x4000,0,3,retail MBC5 SRAM bank paths,high
+blue-fr-de-it-es,0x4000,1,1,retail MBC5 sprite/SRAM scratch path,high
+blue-fr-de-it-es,0x4000,15,1,retail MBC5 SRAM path,high
+blue-fr-de-it-es,0x4000,28,14,retail MBC5 save/PC-box SRAM bank selection,high
+blue-fr-de-it-es,0x6000,1,3,writes ignored by MBC5 retail hardware,high
+blue-fr-de-it-es,0x6000,28,22,writes ignored by MBC5 retail hardware,high

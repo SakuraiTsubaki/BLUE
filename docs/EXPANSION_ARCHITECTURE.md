@@ -32,40 +32,50 @@ Legacy ROM banks: `0x000–0x03F`.
 
 ### Continental European Blue
 
-French, German, Italian, and Spanish inputs are already MBC5+RAM+BATTERY:
+French, German, Italian, and Spanish inputs are already MBC5+RAM+BATTERY with 64 ROM banks and 32 KiB SRAM.
 
-- 1 MiB
-- 64 ROM banks
-- 32 KiB SRAM
+## Preservation boundary
 
-Legacy ROM banks: `0x000–0x03F`.
+The complete legacy image is preserved except:
 
-## Preservation
+1. `0x0000–0x001A`: verified unused RST-vector space used by BLUE's MBC5 trampoline;
+2. cartridge mapper/ROM-size/RAM-size header fields;
+3. header/global checksum fields.
 
-The ROM expansion tool copies the complete legacy image and changes only cartridge type, ROM size code, RAM size code, header checksum, and global checksum.
+The remainder of the original ROM bytes are unchanged. New banks are initialized to `0xFF`.
 
-New banks are initialized to `0xFF`.
+SRAM banks `0x00–0x03` remain the byte-for-byte legacy save area. Banks `0x04–0x0F` are expansion storage.
 
-For saves, SRAM banks `0x00–0x03` are copied byte-for-byte. Banks `0x04–0x0F` are new expansion storage.
+## Mapper control-flow census
 
-## Mapper migration
+Direct ROM analysis grouped mapper writes by 16 KiB ROM bank.
 
-Changing a cartridge header is not enough for MBC1/MBC3 source code.
+Japanese Ao:
 
-A direct byte-pattern census found:
+- `0x2000`: bank 0 = 84, bank 1 = 2, bank 8 = 3
+- `0x4000`: bank 0 = 3, bank 1 = 1, bank 15 = 1, bank 28 = 14
+- `0x6000`: bank 1 = 3, bank 28 = 22
 
-- Japanese Ao: 89 exact `LD (0x2000),A`, 19 exact `LD (0x4000),A`, 25 exact `LD (0x6000),A`;
-- English/international family: 91 exact `LD (0x2000),A`, 19 exact `LD (0x4000),A`, 25 exact `LD (0x6000),A`;
-- no verified ROM contains an exact `LD (0x3000),A` pattern.
+Every international ROM has the same distribution:
 
-These are byte-pattern counts, not proof that every hit is executable.
+- `0x2000`: 86 / 2 / 3 in banks 0 / 1 / 8
+- `0x4000`: 3 / 1 / 1 / 14 in banks 0 / 1 / 15 / 28
+- `0x6000`: 3 / 22 in banks 1 / 28
 
-Before using ROM bank `0x100` or above, BLUE must introduce a verified far-bank routine that writes both MBC5 ROM-bank registers:
+Bank 28 is the save/PC-box SRAM control cluster. The four retail continental MBC5 ROMs execute the same distribution, giving a real retail MBC5 compatibility reference for the international code family.
 
-- low 8 bits: `0x2000–0x2FFF`;
-- ninth bit: `0x3000–0x3FFF`.
+## 9-bit MBC5 ABI
 
-For Ao/English profiles, every legacy mapper-control path must be classified before mapper migration is declared complete.
+BLUE installs a 27-byte fixed-ROM trampoline in the verified unused RST-vector region.
+
+- `FarCall9 = 0x0000`
+- `SetBank9 = 0x0010`
+- bank low byte → `0x2000`
+- bank bit 8 → `0x3000`
+
+See `docs/MBC5_RUNTIME_STAGE1.md`.
+
+Stage 1 treats banks 0x000-0x0FF as normal executable banks. Banks 0x100-0x1FF are reserved until interrupt/bank-state restoration is upgraded from 8 to 9 bits; controlled interrupt-safe access is possible through the new ABI.
 
 ## Expanded IDs
 
@@ -73,10 +83,8 @@ Legacy Gen I byte IDs remain source-local IDs.
 
 New expansion records use 16-bit IDs for species, form, move, item, ability, type, map/location, trainer class, and evolution method.
 
-A far ROM reference stores bank in 16 bits (valid `0x000–0x1FF`) plus a 16-bit CPU address.
-
 ## Generation 10
 
 No unreleased count is guessed.
 
-8 MiB ROM + 128 KiB SRAM + 16-bit content IDs provide the structural envelope. Actual tables are appended only when official data exists.
+The current envelope is 8 MiB ROM + 128 KiB SRAM + 16-bit content IDs. Actual tables are appended only when official data exists.

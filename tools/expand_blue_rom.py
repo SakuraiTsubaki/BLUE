@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Expand a verified BLUE-family ROM to an 8 MiB MBC5 image scaffold.
+"""Expand a verified BLUE-family ROM to an 8 MiB MBC5 runtime image.
 
-The complete source image is preserved except mapper/size/checksum header
-fields. New ROM space is initialized to 0xFF.
+The source image is preserved except:
+- the unused RST-vector space 0x0000-0x001A, where BLUE installs its MBC5
+  9-bit bank trampoline;
+- cartridge mapper/size header fields;
+- header/global checksums.
 
-For MBC1/MBC3 sources this is a storage scaffold, not proof that existing
-bank-switch code is already MBC5-compatible.
+New ROM space is initialized to 0xFF.
 """
 from __future__ import annotations
 
@@ -17,6 +19,30 @@ TARGET_SIZE = 0x800000
 TARGET_CART = 0x1B
 TARGET_ROM_SIZE = 0x08
 TARGET_RAM_SIZE = 0x04
+
+RST_VECTOR_BASELINE = bytes.fromhex("ff00000000000000" * 7)
+
+MBC5_RUNTIME_STUB = bytes((
+    0xD5,
+    0xCD, 0x10, 0x00,
+    0x01, 0x09, 0x00,
+    0xC5,
+    0xE9,
+    0xD1,
+    0x42,
+    0x4B,
+    0xCD, 0x10, 0x00,
+    0xC9,
+    0x79,
+    0xEA, 0x00, 0x20,
+    0x78,
+    0xE6, 0x01,
+    0xEA, 0x00, 0x30,
+    0xC9,
+))
+
+FARCALL9_ADDR = 0x0000
+SETBANK9_ADDR = 0x0010
 
 KNOWN = {
     "71a70e5f77c109177d21c998310ffe01a68e8cd2f41e72e7129093b890c7d3d1": ("ao-jp", 0x80000, 0x03, 0x04),
@@ -58,13 +84,22 @@ def validate_source(data: bytes) -> str:
         raise ValueError("invalid source header checksum")
     if int.from_bytes(data[0x14E:0x150], "big") != global_checksum(data):
         raise ValueError("invalid source global checksum")
+    if data[:0x38] != RST_VECTOR_BASELINE:
+        raise ValueError("unexpected RST-vector contents; refusing runtime injection")
     return profile
+
+
+def install_mbc5_runtime(out: bytearray) -> None:
+    if len(MBC5_RUNTIME_STUB) > 0x38:
+        raise ValueError("MBC5 runtime stub exceeds verified unused RST-vector space")
+    out[:len(MBC5_RUNTIME_STUB)] = MBC5_RUNTIME_STUB
 
 
 def expand_rom(data: bytes) -> bytes:
     validate_source(data)
     out = bytearray(data)
     out.extend(b"\xFF" * (TARGET_SIZE - len(out)))
+    install_mbc5_runtime(out)
     out[0x147] = TARGET_CART
     out[0x148] = TARGET_ROM_SIZE
     out[0x149] = TARGET_RAM_SIZE
@@ -77,7 +112,8 @@ def expand_rom(data: bytes) -> bytes:
 
 
 def preserved_legacy_bytes(source: bytes, expanded: bytes) -> bool:
-    ignored = {0x147, 0x148, 0x149, 0x14D, 0x14E, 0x14F}
+    ignored = set(range(len(MBC5_RUNTIME_STUB)))
+    ignored.update((0x147, 0x148, 0x149, 0x14D, 0x14E, 0x14F))
     return all(source[i] == expanded[i] for i in range(len(source)) if i not in ignored)
 
 
@@ -93,7 +129,10 @@ def main() -> int:
     if not preserved_legacy_bytes(source, expanded):
         raise SystemExit("legacy ROM preservation check failed")
     args.output.write_bytes(expanded)
-    print(f"{profile}: {len(source)} -> {len(expanded)} bytes; MBC5 8 MiB / 128 KiB SRAM header")
+    print(
+        f"{profile}: {len(source)} -> {len(expanded)} bytes; "
+        f"MBC5 8 MiB / 128 KiB SRAM; FarCall9=0x{FARCALL9_ADDR:04X}"
+    )
     return 0
 
 

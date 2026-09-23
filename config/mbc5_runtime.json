@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "runtime": "original-game-boy-rom",
+  "verified_rst_vector_range": {
+    "start": 0,
+    "end_exclusive": 56,
+    "sha256": "5dba2cb910e9dbcb62c7e9e0b829f2e5e9fbf6eb183aaa1639f23998e27b791b",
+    "identical_across_verified_profiles": true
+  },
+  "stage1": {
+    "farcall9_address": 0,
+    "setbank9_address": 16,
+    "stub_bytes": 27,
+    "target_bank_encoding": {
+      "register_pair": "BC",
+      "low_8_bits": "C",
+      "bit_8": "B bit 0"
+    },
+    "caller_bank_encoding": {
+      "register_pair": "DE",
+      "low_8_bits": "E",
+      "bit_8": "D bit 0"
+    },
+    "target_address": "HL",
+    "fully_supported_executable_banks": [0, 255],
+    "high_bank_range": [256, 511],
+    "high_bank_execution_status": "interrupt-bank-state-migration-required",
+    "high_bank_controlled_access": "allowed only under an explicitly interrupt-safe caller contract"
+  },
+  "next_stage": {
+    "name": "9-bit interrupt and legacy-bank-state migration",
+    "requirements": [
+      "track ROM bank bit 8 alongside the legacy low byte",
+      "make VBlank/Timer/Serial bank switches clear and restore bit 8",
+      "audit every legacy ROM-bank write path before enabling long-running code in banks 0x100-0x1FF"
+    ]
+  }
+}
