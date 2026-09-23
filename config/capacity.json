@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "target": "BLUE",
   "policy_target_generation": 10,
   "runtime": "original-game-boy-rom",
@@ -26,20 +26,21 @@
     "preserve_sgb_flag": true
   },
   "runtime_stage": {
-    "mbc5_stage": 2,
-    "farcall9_address": 0,
-    "setbank9_address": 16,
-    "vblank9_address": 32,
+    "mbc5_stage": 3,
+    "farcall9_address": "0x0000",
+    "setbank9_address": "0x0010",
+    "vblank9_address": "0x0020",
+    "legacy_bank8_address": "0x0043",
     "legacy_loaded_bank_low_hram": "0xFFB8",
     "blue_bank_high_hram": "0xFFFA",
-    "normal_executable_banks": [0, 255],
-    "restricted_high_banks": [256, 511],
+    "normal_executable_banks": [0, 511],
     "completed": [
       "9-bit direct bank writes",
       "9-bit FarCall trampoline",
-      "VBlank high-bit preservation"
+      "VBlank high-bit preservation",
+      "legacy synchronous low-bank write migration"
     ],
-    "next": "synchronous legacy bankswitch high-bit migration"
+    "next": "expanded allocation and canonical registry bootstrap"
   },
   "id_width_bits": {
     "species": 16,
@@ -65,7 +66,7 @@
     "no-gba-or-emerald-engine-dependency",
     "each-region-keeps-independent-provenance",
     "legacy-byte-ids-are-not-global-expanded-ids",
-    "legacy-rom-is-preserved-except-verified-runtime-hooks-and-required-header-fields",
+    "legacy-rom-is-preserved-except-verified-runtime-hooks-executable-mapper-writes-and-required-header-fields",
     "first-32kib-save-is-preserved-byte-for-byte",
     "new-content-does-not-depend-on-unreleased-generation-10-counts"
   ]

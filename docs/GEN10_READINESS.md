@@ -12,15 +12,13 @@
 - [x] all six ROMs share the verified unused 0x0000-0x0037 RST block
 - [x] 9-bit SetBank9 implemented
 - [x] 9-bit FarCall9 implemented
-- [x] low bank byte tracked through legacy hLoadedROMBank
-- [x] BLUE high bank bit state assigned in HRAM
-- [x] VBlank interrupt wrapped to clear/restore MBC5 bank bit 8
-- [x] Timer interrupt audited: no bank switch
-- [x] Serial interrupt handler audited: no bank switch
-- [x] Joypad interrupt audited: immediate RETI
-- [ ] synchronous legacy ROM-bank write paths made high-bit-safe
-- [ ] high-bank code allowed to use legacy homecall/bankswitch paths
-- [ ] banks 0x100-0x1FF enabled for unrestricted executable code
+- [x] BLUE high ROM-bank bit tracked in HRAM
+- [x] VBlank interrupt made high-bit-safe
+- [x] Timer / Serial / Joypad interrupt bank behavior audited
+- [x] every exact legacy 0x2000 write classified as code or data
+- [x] 86 Japanese / 88 per international executable writes migrated through LegacyBank8
+- [x] three bank-8 data false positives per profile preserved
+- [x] banks 0x000-0x1FF opened for executable BLUE code through the 9-bit ABI
 
 ## IDs
 
@@ -39,6 +37,10 @@
 - [ ] French/German/Italian/Spanish real save samples audited
 - [ ] region-specific legacy checksum parsers added
 
-## Exact continuation point
+## Next active work
 
-Continue at the synchronous legacy `LD (0x2000),A` paths. Do not restart from mapper selection, ROM sizing, save sizing, RST-vector discovery, FarCall9, or VBlank migration.
+Continue from **expanded allocation + canonical registry bootstrap**.
+
+The mapper-selection, 8 MiB sizing, 128 KiB save sizing, RST-vector discovery,
+FarCall9, VBlank migration, and legacy 8-bit bank-switch migration are already
+completed gates and must not be restarted.

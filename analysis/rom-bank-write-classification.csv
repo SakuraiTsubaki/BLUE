@@ -1,0 +1,7 @@
+profile,total_exact_EA_0020,patched_executable,excluded_data,classification_rule
+ao-jp,89,86,3,"exclude verified bank-8 data offsets 0x2279D 0x22DBE 0x2333E; all other hits are executable"
+blue-us-eu,91,88,3,"exclude verified bank-8 data offsets 0x226EF 0x22D10 0x23290; all other hits are executable"
+blue-fr,91,88,3,"exclude verified bank-8 data offsets 0x226F3 0x22D14 0x23294; all other hits are executable"
+blue-de,91,88,3,"exclude verified bank-8 data offsets 0x226FA 0x22D1B 0x2329B; all other hits are executable"
+blue-it,91,88,3,"exclude verified bank-8 data offsets 0x226EE 0x22D0F 0x2328F; all other hits are executable"
+blue-es,91,88,3,"exclude verified bank-8 data offsets 0x226F4 0x22D15 0x23295; all other hits are executable"
