@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "magic": "BLU10ROM",
+  "header_bytes": 64,
+  "directory_cpu_address": "0x4080",
+  "directory_entry_bytes": 16,
+  "metadata_bank_by_profile": {
+    "ao-jp": "0x020",
+    "blue-us-eu": "0x040",
+    "blue-fr": "0x040",
+    "blue-de": "0x040",
+    "blue-it": "0x040",
+    "blue-es": "0x040"
+  },
+  "first_content_bank_by_profile": {
+    "ao-jp": "0x021",
+    "blue-us-eu": "0x041",
+    "blue-fr": "0x041",
+    "blue-de": "0x041",
+    "blue-it": "0x041",
+    "blue-es": "0x041"
+  },
+  "last_content_bank": "0x1FF",
+  "registry_policy": {
+    "id_width_bits": 16,
+    "allocation": "append-only",
+    "initial_count": 0,
+    "unallocated_far_pointer": "0xFFFF:0xFFFF",
+    "no_unreleased_generation_10_counts": true
+  }
+}

@@ -1,0 +1,11 @@
+domain_id,domain,id_width_bits,legacy_source_width_bits,initial_count,allocation,notes
+1,species,16,8,0,append-only,canonical species namespace
+2,form,16,0,0,append-only,form identity is separate from species identity
+3,move,16,8,0,append-only,legacy move IDs remain source-local
+4,item,16,8,0,append-only,legacy item IDs remain source-local
+5,ability,16,0,0,append-only,not present in Generation I legacy format
+6,type,16,8,0,append-only,legacy type IDs translate through profile adapter
+7,map,16,8,0,append-only,expanded map namespace
+8,location,16,8,0,append-only,expanded location namespace
+9,trainer_class,16,8,0,append-only,expanded trainer-class namespace
+10,evolution_method,16,8,0,append-only,expanded evolution-method namespace
