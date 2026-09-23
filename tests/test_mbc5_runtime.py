@@ -4,12 +4,10 @@ from tools.expand_blue_rom import (
     FARCALL9_ADDR,
     LEGACY_BANK8_ADDR,
     LEGACY_BANK_HELPER_BASELINE,
-    PROFILE_RUNTIME,
     RST_VECTOR_BASELINE,
     SETBANK9_ADDR,
     VBLANK9_ADDR,
     build_mbc5_runtime,
-    executable_rom_bank_writes,
     legacy_bank8_helper,
 )
 
@@ -38,7 +36,8 @@ class Mbc5RuntimeTests(unittest.TestCase):
         wrapper = runtime[VBLANK9_ADDR:0x38]
         self.assertTrue(wrapper.startswith(b"\xF0\xFA\xF5"))
         self.assertIn(b"\xCD\x24\x20", wrapper)
-        self.assertTrue(wrapper.endswith(b"\xD9"))
+        reti = wrapper.index(b"\xD9")
+        self.assertEqual(wrapper[reti + 1:], b"\x00" * (len(wrapper) - reti - 1))
 
     def test_legacy_bank8_preserves_af_and_clears_high(self):
         helper = legacy_bank8_helper()
