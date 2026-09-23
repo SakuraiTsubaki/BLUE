@@ -11,7 +11,10 @@ import argparse
 import hashlib
 from pathlib import Path
 
-from blue_expansion_layout import install_expansion_metadata
+try:
+    from blue_expansion_layout import install_expansion_metadata
+except ModuleNotFoundError:
+    from tools.blue_expansion_layout import install_expansion_metadata
 
 TARGET_SIZE = 0x800000
 TARGET_CART = 0x1B
