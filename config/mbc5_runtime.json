@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "runtime": "original-game-boy-rom",
   "verified_rst_vector_range": {
     "start": 0,
@@ -7,32 +7,41 @@
     "sha256": "5dba2cb910e9dbcb62c7e9e0b829f2e5e9fbf6eb183aaa1639f23998e27b791b",
     "identical_across_verified_profiles": true
   },
-  "stage1": {
+  "hram": {
+    "legacy_loaded_rom_bank_low": "0xFFB8",
+    "blue_current_rom_bank_high": "0xFFFA",
+    "basis": "legacy hLoadedROMBank operand is 0xB8 in verified ROM paths; international Red/Blue HRAM source leaves five trailing bytes after hDisableJoypadPolling"
+  },
+  "stage2": {
     "farcall9_address": 0,
     "setbank9_address": 16,
-    "stub_bytes": 27,
-    "target_bank_encoding": {
-      "register_pair": "BC",
-      "low_8_bits": "C",
-      "bit_8": "B bit 0"
-    },
-    "caller_bank_encoding": {
-      "register_pair": "DE",
-      "low_8_bits": "E",
-      "bit_8": "D bit 0"
-    },
-    "target_address": "HL",
-    "fully_supported_executable_banks": [0, 255],
+    "vblank9_address": 32,
+    "normal_executable_banks": [0, 255],
     "high_bank_range": [256, 511],
-    "high_bank_execution_status": "interrupt-bank-state-migration-required",
-    "high_bank_controlled_access": "allowed only under an explicitly interrupt-safe caller contract"
+    "high_bank_execution_status": "vblank-safe-but-legacy-synchronous-bankswitch-audit-pending"
+  },
+  "profiles": {
+    "ao-jp": {"vblank_target": "0x200A", "vblank_reti": "0x208E"},
+    "blue-us-eu": {"vblank_target": "0x2024", "vblank_reti": "0x20AE"},
+    "blue-fr": {"vblank_target": "0x2020", "vblank_reti": "0x20AA"},
+    "blue-de": {"vblank_target": "0x2024", "vblank_reti": "0x20AE"},
+    "blue-it": {"vblank_target": "0x2024", "vblank_reti": "0x20AE"},
+    "blue-es": {"vblank_target": "0x2023", "vblank_reti": "0x20AD"}
+  },
+  "interrupt_audit": {
+    "vblank": "bank-switching; wrapped and high-bit-restored",
+    "timer": "immediate RETI; no ROM bank switch",
+    "serial": "handler does not switch ROM banks",
+    "lcd": "unused trap vector",
+    "joypad": "immediate RETI"
   },
   "next_stage": {
-    "name": "9-bit interrupt and legacy-bank-state migration",
+    "name": "legacy synchronous bankswitch high-bit migration",
     "requirements": [
-      "track ROM bank bit 8 alongside the legacy low byte",
-      "make VBlank/Timer/Serial bank switches clear and restore bit 8",
-      "audit every legacy ROM-bank write path before enabling long-running code in banks 0x100-0x1FF"
+      "classify every executable 0x2000 write path",
+      "ensure legacy low-bank switches explicitly clear bit 8 when entered from a high bank",
+      "preserve A/flags semantics at patched write sites",
+      "enable unrestricted execution in banks 0x100-0x1FF only after this gate passes"
     ]
   }
 }

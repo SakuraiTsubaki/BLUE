@@ -11,9 +11,13 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from expand_blue_rom import (
     FARCALL9_ADDR,
-    MBC5_RUNTIME_STUB,
+    H_CURRENT_ROM_BANK_HIGH,
+    H_LOADED_ROM_BANK_LOW,
+    PROFILE_RUNTIME,
     RST_VECTOR_BASELINE,
     SETBANK9_ADDR,
+    VBLANK9_ADDR,
+    build_mbc5_runtime,
 )
 
 
@@ -25,23 +29,25 @@ def validate() -> list[str]:
         errors.append("RST-vector baseline hash mismatch")
     if len(RST_VECTOR_BASELINE) != 0x38:
         errors.append("verified RST-vector range must end before 0x0038")
-    if len(MBC5_RUNTIME_STUB) > len(RST_VECTOR_BASELINE):
-        errors.append("runtime stub does not fit verified vector space")
-    if FARCALL9_ADDR != cfg["stage1"]["farcall9_address"]:
-        errors.append("FarCall9 address mismatch")
-    if SETBANK9_ADDR != cfg["stage1"]["setbank9_address"]:
-        errors.append("SetBank9 address mismatch")
-    if len(MBC5_RUNTIME_STUB) != cfg["stage1"]["stub_bytes"]:
-        errors.append("runtime stub byte count mismatch")
 
-    for opcode in (bytes((0xEA, 0x00, 0x20)), bytes((0xEA, 0x00, 0x30))):
-        if opcode not in MBC5_RUNTIME_STUB:
-            errors.append(f"runtime stub missing mapper write {opcode.hex()}")
+    for profile, meta in PROFILE_RUNTIME.items():
+        runtime = build_mbc5_runtime(meta["vblank_target"])
+        if len(runtime) != 0x38:
+            errors.append(f"{profile}: runtime vector image size changed")
+        call = bytes((0xCD, meta["vblank_target"] & 0xFF, meta["vblank_target"] >> 8))
+        if call not in runtime[VBLANK9_ADDR:]:
+            errors.append(f"{profile}: VBlank wrapper does not call verified handler")
 
-    if cfg["stage1"]["fully_supported_executable_banks"] != [0, 255]:
-        errors.append("stage1 executable-bank safety boundary changed")
-    if cfg["stage1"]["high_bank_range"] != [256, 511]:
-        errors.append("MBC5 high-bank range changed")
+    stage = cfg["stage2"]
+    if (stage["farcall9_address"], stage["setbank9_address"], stage["vblank9_address"]) != (
+        FARCALL9_ADDR, SETBANK9_ADDR, VBLANK9_ADDR
+    ):
+        errors.append("runtime entry-point manifest mismatch")
+
+    if cfg["hram"]["legacy_loaded_rom_bank_low"] != f"0xFF{H_LOADED_ROM_BANK_LOW:02X}":
+        errors.append("legacy low-bank HRAM address mismatch")
+    if cfg["hram"]["blue_current_rom_bank_high"] != f"0xFF{H_CURRENT_ROM_BANK_HIGH:02X}":
+        errors.append("BLUE high-bank HRAM address mismatch")
 
     return errors
 
@@ -52,7 +58,7 @@ def main() -> int:
         for error in errors:
             print(f"ERROR: {error}")
         return 1
-    print("BLUE MBC5 stage-1 runtime ABI: OK")
+    print("BLUE MBC5 stage-2 VBlank bank-state ABI: OK")
     return 0
 
 

@@ -1,0 +1,11 @@
+profile,vector,original_target,original_reti,bank_switches,status
+ao-jp,VBlank,0x200A,0x208E,yes,wrapped-by-BLUE-VBlank9
+blue-us-eu,VBlank,0x2024,0x20AE,yes,wrapped-by-BLUE-VBlank9
+blue-fr,VBlank,0x2020,0x20AA,yes,wrapped-by-BLUE-VBlank9
+blue-de,VBlank,0x2024,0x20AE,yes,wrapped-by-BLUE-VBlank9
+blue-it,VBlank,0x2024,0x20AE,yes,wrapped-by-BLUE-VBlank9
+blue-es,VBlank,0x2023,0x20AD,yes,wrapped-by-BLUE-VBlank9
+all,Timer,profile-specific immediate target,RETI,no,no-high-bit-wrapper-needed
+all,Serial,profile-specific immediate target,RETI,no,no-high-bit-wrapper-needed
+all,LCD,unused trap,n/a,no,no-high-bit-wrapper-needed
+all,Joypad,vector RETI,n/a,no,no-high-bit-wrapper-needed
