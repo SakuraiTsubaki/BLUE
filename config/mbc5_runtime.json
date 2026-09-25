@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "runtime": "original-game-boy-rom",
   "verified_rst_vector_range": {
     "start": 0,
@@ -19,12 +19,13 @@
     "legacy_loaded_rom_bank_low": "0xFFB8",
     "blue_current_rom_bank_high": "0xFFFA"
   },
-  "stage3": {
+  "stage4": {
     "farcall9_address": "0x0000",
+    "farcall9_return_trampoline": "0x000B",
+    "farcall9_preserves_A_and_flags": true,
     "setbank9_address": "0x0010",
     "vblank9_address": "0x0020",
     "legacy_bank8_address": "0x0043",
-    "legacy_bank8_semantics": "preserve A and flags; clear MBC5 bit 8 and high-bit shadow; write A to low ROM bank register",
     "patched_executable_rom_bank_writes": {
       "ao-jp": 86,
       "blue-us-eu": 88,
@@ -33,17 +34,20 @@
       "blue-it": 88,
       "blue-es": 88
     },
-    "excluded_data_false_positives_per_profile": 3,
     "normal_executable_banks": [0, 511],
-    "status": "9-bit MBC5 executable bank namespace opened"
+    "metadata_species_lookup": {
+      "cpu_address": "0x43A0",
+      "input": "A",
+      "output": "DE"
+    },
+    "status": "canonical Gen I species lookup callable through 9-bit FarCall9"
   },
   "next_stage": {
-    "name": "expanded allocation and registry bootstrap",
+    "name": "legacy move item type canonicalization",
     "requirements": [
-      "reserve first expansion bank per profile for BLUE metadata and registries",
-      "create 16-bit canonical species/form/move/item/type/ability registry headers",
-      "do not renumber legacy Gen I byte IDs",
-      "add ROM-level regression probes for low/high bank calls"
+      "locate and verify source-local move/item/type ID tables in all six ROMs",
+      "define canonical 16-bit mappings without renumbering legacy byte IDs",
+      "install versioned mapping blocks in BLUE metadata/content space"
     ]
   }
 }

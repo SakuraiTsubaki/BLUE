@@ -2,8 +2,6 @@
 
 ## Profile-relative first expansion bank
 
-BLUE does not overwrite retail content to create its registry root.
-
 | Profile | Legacy end | Metadata bank | First content bank |
 | --- | ---: | ---: | ---: |
 | ao-jp | 0x01F | 0x020 | 0x021 |
@@ -13,51 +11,46 @@ BLUE does not overwrite retail content to create its registry root.
 | blue-it | 0x03F | 0x040 | 0x041 |
 | blue-es | 0x03F | 0x040 | 0x041 |
 
-The metadata bank is reserved for BLUE format metadata and registry roots.
-Ordinary expanded content begins in the following bank and may extend through
-MBC5 bank 0x1FF.
+Ordinary expanded content begins after the profile metadata bank and may extend
+through MBC5 bank 0x1FF.
 
-## Header
+## Metadata header
 
-The metadata bank begins at CPU address 0x4000 with a 64-byte little-endian
-header whose magic is ASCII `BLU10ROM`.
+CPU `0x4000`: 64-byte `BLU10ROM` schema-2 header.
 
-Schema 2 records:
+It records source provenance, expansion ranges, runtime entry points, registry
+directory shape, and the legacy species map address `0x4200`.
 
-- source profile ID;
-- physical metadata bank;
-- first allocatable content bank;
-- last MBC5 ROM bank;
-- expansion SRAM bank range;
-- FarCall9 / SetBank9 / VBlank9 / LegacyBank8 entry points;
-- registry-directory address/count/entry size;
-- legacy-species mapping address `0x4200`;
-- the first 16 bytes of the verified source ROM SHA-256;
-- header CRC32.
+## Registry directory
 
-## Canonical registry directory
+CPU `0x4080`, 10 entries × 16 bytes.
 
-The directory begins at CPU address `0x4080`.
+The species entry is now live:
 
-Each 16-byte directory record contains a 16-bit domain ID and a future far
-pointer.
+- canonical count: 151;
+- flags: namespace-reserved + callable-adapter;
+- bank: profile metadata bank (0x020 or 0x040);
+- address: `0x43A0`.
 
-The species namespace now reserves canonical IDs `1..151`, grounded in the
-verified Gen I PokedexOrder table. Species record storage itself remains
-unallocated. Other domains remain count 0 until real data is imported.
+Other domains remain unallocated until their verified mappings/data are added.
 
-Unallocated far pointers remain `0xFFFF:0xFFFF`.
+## Legacy species mapping
 
-## Legacy species map
+CPU `0x4200`: 400-byte `BLU1SPC` block.
 
-CPU address `0x4200` contains the versioned `BLU1SPC` mapping block:
+Its 190 little-endian 16-bit entries map the original internal species byte
+namespace to canonical IDs. The 151 official slots map to National Dex
+1..151; 39 MissingNo. slots map to 0.
 
-- 190 Generation I internal species slots;
-- 151 official species mapped to canonical National Dex IDs 1..151;
-- 39 MissingNo. slots mapped to canonical ID 0;
-- 16-bit little-endian canonical IDs;
-- payload CRC32.
+## Runtime species adapter
 
-This is verified against all six supplied Blue-family ROMs before expansion.
+CPU `0x43A0`: `LegacySpeciesToCanonical`.
 
-Generation 10 capacity remains structural. No unreleased species are invented.
+Input A is the original Gen I species ID. Output DE is the canonical 16-bit
+species ID. It is called through `FarCall9`, whose stage-4 ABI preserves A
+and flags while switching banks.
+
+This makes the species canonicalization a live runtime service rather than a
+manifest-only mapping.
+
+No unreleased Generation 10 species are invented.

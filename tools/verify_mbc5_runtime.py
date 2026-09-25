@@ -41,7 +41,13 @@ def validate() -> list[str]:
         if call not in runtime[VBLANK9_ADDR:]:
             errors.append(f"{profile}: VBlank wrapper does not call verified handler")
 
-    stage = cfg["stage3"]
+        farcall = runtime[:0x10]
+        if farcall[:2] != b"\xD5\xF5" or farcall[5] != 0xF1:
+            errors.append(f"{profile}: FarCall9 no longer preserves AF")
+        if farcall[0x0B:0x0F] != b"\xC1\xC3\x10\x00":
+            errors.append(f"{profile}: FarCall9 return trampoline changed")
+
+    stage = cfg["stage4"]
     entries = tuple(int(stage[key], 16) for key in (
         "farcall9_address",
         "setbank9_address",
@@ -50,6 +56,8 @@ def validate() -> list[str]:
     ))
     if entries != (FARCALL9_ADDR, SETBANK9_ADDR, VBLANK9_ADDR, LEGACY_BANK8_ADDR):
         errors.append("runtime entry-point manifest mismatch")
+    if not stage["farcall9_preserves_A_and_flags"]:
+        errors.append("FarCall9 must preserve A and flags for canonical adapters")
 
     for profile, expected in stage["patched_executable_rom_bank_writes"].items():
         actual = PROFILE_RUNTIME[profile]["rom_bank_write_count"] - len(
@@ -70,7 +78,7 @@ def main() -> int:
         for error in errors:
             print(f"ERROR: {error}")
         return 1
-    print("BLUE MBC5 stage-3 legacy bankswitch migration: OK")
+    print("BLUE MBC5 stage-4 canonical-adapter ABI: OK")
     return 0
 
 

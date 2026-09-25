@@ -35,6 +35,10 @@ MAP_BANK_OFFSET = 0x0200
 MAP_CPU_ADDRESS = 0x4200
 MAP_HEADER_FORMAT = "<8sHHHHI"
 MAP_HEADER_SIZE = struct.calcsize(MAP_HEADER_FORMAT)
+MAP_PAYLOAD_CPU_ADDRESS = MAP_CPU_ADDRESS + MAP_HEADER_SIZE
+
+LOOKUP_BANK_OFFSET = 0x03A0
+LOOKUP_CPU_ADDRESS = 0x43A0
 
 
 def validate_static_mapping() -> None:
@@ -84,6 +88,32 @@ def build_legacy_species_map_block() -> bytes:
         crc32,
     )
     return header + payload
+
+
+def build_lookup_routine() -> bytes:
+    # Runtime ABI:
+    #   input  A  = legacy Gen I species ID (0..190)
+    #   output DE = BLUE canonical species ID (0..151)
+    #
+    # The routine lives in the same metadata bank as the BLU1SPC table and is
+    # entered through FarCall9, which preserves A.
+    return bytes((
+        0xA7,                         # and a
+        0x28, 0x10,                   # jr z, .zero
+        0x3D,                         # dec a
+        0x5F,                         # ld e, a
+        0x16, 0x00,                   # ld d, 0
+        0xCB, 0x23,                   # sla e
+        0xCB, 0x12,                   # rl d
+        0x21, MAP_PAYLOAD_CPU_ADDRESS & 0xFF, MAP_PAYLOAD_CPU_ADDRESS >> 8,
+        0x19,                         # add hl, de
+        0x5E,                         # ld e, [hl]
+        0x23,                         # inc hl
+        0x56,                         # ld d, [hl]
+        0xC9,                         # ret
+        0x11, 0x00, 0x00,             # .zero: ld de, 0
+        0xC9,                         # ret
+    ))
 
 
 def inspect_legacy_species_map_block(block: bytes) -> dict[str, int | str]:

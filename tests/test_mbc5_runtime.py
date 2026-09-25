@@ -26,6 +26,13 @@ class Mbc5RuntimeTests(unittest.TestCase):
         self.assertEqual(VBLANK9_ADDR, 0x0020)
         self.assertEqual(LEGACY_BANK8_ADDR, 0x0043)
 
+    def test_farcall9_preserves_af_and_uses_compact_return_trampoline(self):
+        runtime = build_mbc5_runtime(0x2024)
+        farcall = runtime[:0x10]
+        self.assertEqual(farcall[:2], b"\xD5\xF5")
+        self.assertIn(b"\xF1\x01\x0B\x00\xC5\xE9", farcall)
+        self.assertEqual(farcall[0x0B:0x0F], b"\xC1\xC3\x10\x00")
+
     def test_setbank9_writes_both_mbc5_registers(self):
         runtime = build_mbc5_runtime(0x2024)
         self.assertIn(b"\xEA\x00\x20", runtime)

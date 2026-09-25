@@ -173,16 +173,15 @@ def build_mbc5_runtime(vblank_target: int) -> bytes:
     out = bytearray(RST_VECTOR_BASELINE)
 
     farcall9 = bytes((
-        0xD5,
-        0xCD, 0x10, 0x00,
-        0x01, 0x09, 0x00,
-        0xC5,
-        0xE9,
-        0xD1,
-        0x42,
-        0x4B,
-        0xCD, 0x10, 0x00,
-        0xC9,
+        0xD5,                   # push de (caller bank)
+        0xF5,                   # push af (argument/flags)
+        0xCD, 0x10, 0x00,       # call SetBank9
+        0xF1,                   # pop af
+        0x01, 0x0B, 0x00,       # ld bc, $000B (return trampoline)
+        0xC5,                   # push bc
+        0xE9,                   # jp hl
+        0xC1,                   # $000B: pop bc (saved caller bank)
+        0xC3, 0x10, 0x00,       # jp SetBank9; its RET returns to caller
     ))
 
     setbank9 = bytes((
@@ -294,7 +293,7 @@ def main() -> int:
         f"{profile}: {len(source)} -> {len(expanded)} bytes; "
         f"MBC5 8 MiB / 128 KiB SRAM; FarCall9=0x{FARCALL9_ADDR:04X}; "
         f"LegacyBank8=0x{LEGACY_BANK8_ADDR:04X}; patched-writes={count}; "
-        "metadata=installed; legacy-species-map=190->151"
+        "metadata=installed; legacy-species-map=190->151; species-adapter=0x43A0"
     )
     return 0
 

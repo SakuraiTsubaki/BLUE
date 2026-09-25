@@ -1,5 +1,5 @@
 domain_id,domain,id_width_bits,legacy_source_width_bits,initial_count,allocation,notes
-1,species,16,8,0,append-only,canonical species namespace
+1,species,16,8,151,append-only,Gen I canonical IDs 1-151 reserved; directory points to callable legacy species adapter
 2,form,16,0,0,append-only,form identity is separate from species identity
 3,move,16,8,0,append-only,legacy move IDs remain source-local
 4,item,16,8,0,append-only,legacy item IDs remain source-local

@@ -8,16 +8,22 @@ import zlib
 try:
     from legacy_species_mapping import (
         CANONICAL_SPECIES_COUNT,
+        LOOKUP_BANK_OFFSET,
+        LOOKUP_CPU_ADDRESS,
         MAP_BANK_OFFSET,
         MAP_CPU_ADDRESS,
         build_legacy_species_map_block,
+        build_lookup_routine,
     )
 except ModuleNotFoundError:
     from tools.legacy_species_mapping import (
         CANONICAL_SPECIES_COUNT,
+        LOOKUP_BANK_OFFSET,
+        LOOKUP_CPU_ADDRESS,
         MAP_BANK_OFFSET,
         MAP_CPU_ADDRESS,
         build_legacy_species_map_block,
+        build_lookup_routine,
     )
 
 ROM_BANK_BYTES = 0x4000
@@ -29,6 +35,7 @@ DIRECTORY_CPU_ADDRESS = 0x4080
 DIRECTORY_ENTRY_SIZE = 16
 UNALLOCATED = 0xFFFF
 REGISTRY_FLAG_NAMESPACE_RESERVED = 0x0001
+REGISTRY_FLAG_CALLABLE_ADAPTER = 0x0002
 
 PROFILE_LAYOUT = {
     "ao-jp": {"profile_id": 1, "metadata_bank": 0x020},
@@ -98,15 +105,19 @@ def build_header(profile: str, source_sha256: str) -> bytes:
     )
 
 
-def build_directory() -> bytes:
+def build_directory(profile: str) -> bytes:
     entries = []
     for name, domain_id in REGISTRY_DOMAINS:
         if name == "species":
-            flags = REGISTRY_FLAG_NAMESPACE_RESERVED
+            flags = REGISTRY_FLAG_NAMESPACE_RESERVED | REGISTRY_FLAG_CALLABLE_ADAPTER
             count = CANONICAL_SPECIES_COUNT
+            bank = PROFILE_LAYOUT[profile]["metadata_bank"]
+            address = LOOKUP_CPU_ADDRESS
         else:
             flags = 0
             count = 0
+            bank = UNALLOCATED
+            address = UNALLOCATED
 
         entries.append(struct.pack(
             DIRECTORY_FORMAT,
@@ -114,8 +125,8 @@ def build_directory() -> bytes:
             flags,
             count,
             0,
-            UNALLOCATED,
-            UNALLOCATED,
+            bank,
+            address,
             1,
             0,
         ))
@@ -133,14 +144,19 @@ def install_expansion_metadata(out: bytearray, profile: str, source_sha256: str)
         raise ValueError(f"{profile}: metadata bank is not blank expansion space")
 
     header = build_header(profile, source_sha256)
-    directory = build_directory()
+    directory = build_directory(profile)
     legacy_species_map = build_legacy_species_map_block()
+    lookup_routine = build_lookup_routine()
 
     out[base:base + len(header)] = header
     directory_start = base + DIRECTORY_BANK_OFFSET
     out[directory_start:directory_start + len(directory)] = directory
+
     map_start = base + MAP_BANK_OFFSET
     out[map_start:map_start + len(legacy_species_map)] = legacy_species_map
+
+    lookup_start = base + LOOKUP_BANK_OFFSET
+    out[lookup_start:lookup_start + len(lookup_routine)] = lookup_routine
 
 
 def inspect_header(data: bytes, profile: str) -> dict[str, int | str]:
@@ -172,3 +188,12 @@ def inspect_header(data: bytes, profile: str) -> dict[str, int | str]:
         "crc32_valid": int(crc32 == expected_crc),
         "legacy_species_map_cpu_address": legacy_species_map_cpu_address,
     }
+
+
+def inspect_directory_entry(data: bytes, profile: str, index: int) -> dict[str, int]:
+    if not 0 <= index < len(REGISTRY_DOMAINS):
+        raise ValueError("directory index out of range")
+    base = metadata_file_offset(profile) + DIRECTORY_BANK_OFFSET + index * DIRECTORY_ENTRY_SIZE
+    values = struct.unpack(DIRECTORY_FORMAT, data[base:base + DIRECTORY_ENTRY_SIZE])
+    keys = ("domain_id", "flags", "count", "record_size", "bank", "address", "schema_version", "reserved")
+    return dict(zip(keys, values))
