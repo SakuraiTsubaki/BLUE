@@ -8,10 +8,14 @@ from tools.blue_expansion_layout import (
     REGISTRY_DOMAINS,
     ROM_BANK_BYTES,
     build_directory,
-    build_header,
     inspect_header,
     install_expansion_metadata,
     metadata_file_offset,
+)
+from tools.legacy_species_mapping import (
+    MAP_BANK_OFFSET,
+    MAP_CPU_ADDRESS,
+    build_legacy_species_map_block,
 )
 
 
@@ -21,21 +25,31 @@ class ExpansionLayoutTests(unittest.TestCase):
         for profile in ("blue-us-eu", "blue-fr", "blue-de", "blue-it", "blue-es"):
             self.assertEqual(PROFILE_LAYOUT[profile]["metadata_bank"], 0x40)
 
-    def test_directory_is_empty_but_versioned(self):
+    def test_directory_is_versioned(self):
         directory = build_directory()
         self.assertEqual(len(directory), len(REGISTRY_DOMAINS) * DIRECTORY_ENTRY_SIZE)
 
     def test_install_uses_first_expansion_bank(self):
         source_sha = hashlib.sha256(b"blue-test").hexdigest()
-        image = bytearray(b"\xFF" * (0x800000))
+        image = bytearray(b"\xFF" * 0x800000)
         install_expansion_metadata(image, "ao-jp", source_sha)
         base = metadata_file_offset("ao-jp")
         self.assertEqual(base, 0x20 * ROM_BANK_BYTES)
         self.assertEqual(image[base:base + 8], MAGIC)
         info = inspect_header(image, "ao-jp")
+        self.assertEqual(info["schema_version"], 2)
         self.assertEqual(info["first_content_bank"], 0x21)
         self.assertEqual(info["directory_count"], 10)
+        self.assertEqual(info["legacy_species_map_cpu_address"], MAP_CPU_ADDRESS)
         self.assertEqual(info["crc32_valid"], 1)
+
+    def test_species_map_is_embedded(self):
+        source_sha = hashlib.sha256(b"blue-map").hexdigest()
+        image = bytearray(b"\xFF" * 0x800000)
+        install_expansion_metadata(image, "ao-jp", source_sha)
+        base = metadata_file_offset("ao-jp") + MAP_BANK_OFFSET
+        block = build_legacy_species_map_block()
+        self.assertEqual(image[base:base + len(block)], block)
 
     def test_international_content_starts_after_original_1mib(self):
         source_sha = hashlib.sha256(b"blue-intl").hexdigest()

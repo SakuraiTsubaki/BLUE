@@ -18,21 +18,32 @@
 - [x] Japanese metadata bank reserved at 0x020
 - [x] international metadata bank reserved at 0x040
 - [x] first ordinary content banks set to 0x021 / 0x041
-- [x] `BLU10ROM` versioned metadata header implemented
-- [x] source-ROM SHA-256 prefix embedded for provenance
+- [x] `BLU10ROM` metadata header schema 2 implemented
 - [x] registry directory implemented at CPU 0x4080
-- [x] species/form/move/item/ability/type/map/location/trainer/evolution domains registered
-- [x] registry counts remain zero until actual data is allocated
-- [x] unallocated far pointers use 0xFFFF:0xFFFF
+- [x] legacy species mapping block implemented at CPU 0x4200
+- [x] source-ROM SHA-256 prefix embedded for provenance
 
-## IDs
+## Species canonicalization
 
-- [x] expanded global IDs are 16-bit
-- [x] allocation is append-only
+- [x] PokedexOrder located exactly once in all six verified ROMs
+- [x] all six PokedexOrder tables byte-identical
+- [x] 190 internal slots verified
+- [x] 151 official species verified
+- [x] 39 MissingNo. slots preserved as unmapped/0
+- [x] canonical Generation I species IDs fixed to National Dex 1..151
+- [x] 190-entry legacy byte ID → 16-bit canonical species map generated
+- [x] mapping payload versioned and CRC-protected in expanded ROM
+- [ ] runtime lookup routine wired to consume BLU1SPC mapping block
+
+## Other IDs
+
+- [x] expanded global IDs are 16-bit and append-only
 - [x] legacy Gen I byte IDs remain source-local compatibility values
-- [ ] Generation I legacy→canonical mapping tables generated from verified source data
-- [ ] current official post-Gen-I content registries imported
-- [ ] registry records wired into runtime lookup code
+- [ ] move legacy→canonical mapping generated
+- [ ] item legacy→canonical mapping generated
+- [ ] type legacy→canonical mapping generated
+- [ ] map/location/trainer/evolution mappings generated
+- [ ] post-Gen-I official registries imported
 
 ## Save
 
@@ -47,6 +58,6 @@
 
 ## Exact continuation point
 
-Continue from **Generation I legacy ID → canonical 16-bit registry mappings** and
-runtime lookup wiring. Do not restart mapper sizing, MBC5 migration, interrupt
-migration, legacy bank-switch migration, or expansion-bank bootstrap.
+Continue from the **runtime species lookup adapter**, then the verified legacy
+move/item/type mappings. Do not restart mapper, save sizing, MBC5, VBlank,
+legacy bank-switch, expansion-bank, or Gen I species mapping work.

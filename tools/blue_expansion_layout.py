@@ -2,18 +2,33 @@
 """BLUE expanded-ROM metadata and canonical registry bootstrap."""
 from __future__ import annotations
 
-import hashlib
 import struct
 import zlib
 
+try:
+    from legacy_species_mapping import (
+        CANONICAL_SPECIES_COUNT,
+        MAP_BANK_OFFSET,
+        MAP_CPU_ADDRESS,
+        build_legacy_species_map_block,
+    )
+except ModuleNotFoundError:
+    from tools.legacy_species_mapping import (
+        CANONICAL_SPECIES_COUNT,
+        MAP_BANK_OFFSET,
+        MAP_CPU_ADDRESS,
+        build_legacy_species_map_block,
+    )
+
 ROM_BANK_BYTES = 0x4000
 MAGIC = b"BLU10ROM"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 HEADER_SIZE = 64
 DIRECTORY_BANK_OFFSET = 0x80
 DIRECTORY_CPU_ADDRESS = 0x4080
 DIRECTORY_ENTRY_SIZE = 16
 UNALLOCATED = 0xFFFF
+REGISTRY_FLAG_NAMESPACE_RESERVED = 0x0001
 
 PROFILE_LAYOUT = {
     "ao-jp": {"profile_id": 1, "metadata_bank": 0x020},
@@ -47,41 +62,61 @@ def build_header(profile: str, source_sha256: str) -> bytes:
         SCHEMA_VERSION,
         HEADER_SIZE,
         cfg["profile_id"],
-        0,  # flags
+        0,
         cfg["metadata_bank"],
-        cfg["metadata_bank"] + 1,  # first allocatable content bank
-        0x01FF,  # last MBC5 bank
-        0x0004,  # first extension SRAM bank
-        0x000F,  # last extension SRAM bank
-        0x0000,  # FarCall9
-        0x0010,  # SetBank9
-        0x0020,  # VBlank9
-        0x0043,  # LegacyBank8
+        cfg["metadata_bank"] + 1,
+        0x01FF,
+        0x0004,
+        0x000F,
+        0x0000,
+        0x0010,
+        0x0020,
+        0x0043,
         DIRECTORY_CPU_ADDRESS,
         len(REGISTRY_DOMAINS),
         DIRECTORY_ENTRY_SIZE,
     )
     source_prefix = bytes.fromhex(source_sha256)[:16]
-    raw = struct.pack(HEADER_FORMAT, MAGIC, *fields, source_prefix, 0, 0)
+    raw = struct.pack(
+        HEADER_FORMAT,
+        MAGIC,
+        *fields,
+        source_prefix,
+        0,
+        MAP_CPU_ADDRESS,
+    )
     if len(raw) != HEADER_SIZE:
         raise AssertionError("BLUE expansion header size changed")
     crc32 = zlib.crc32(raw) & 0xFFFFFFFF
-    return struct.pack(HEADER_FORMAT, MAGIC, *fields, source_prefix, crc32, 0)
+    return struct.pack(
+        HEADER_FORMAT,
+        MAGIC,
+        *fields,
+        source_prefix,
+        crc32,
+        MAP_CPU_ADDRESS,
+    )
 
 
 def build_directory() -> bytes:
     entries = []
     for name, domain_id in REGISTRY_DOMAINS:
-        del name
+        if name == "species":
+            flags = REGISTRY_FLAG_NAMESPACE_RESERVED
+            count = CANONICAL_SPECIES_COUNT
+        else:
+            flags = 0
+            count = 0
+
         entries.append(struct.pack(
             DIRECTORY_FORMAT,
             domain_id,
-            0,              # flags
-            0,              # count: no future content is guessed
-            0,              # record size: assigned when domain storage is implemented
-            UNALLOCATED,    # bank
-            UNALLOCATED,    # CPU address
-            1,              # registry schema version
+            flags,
+            count,
+            0,
+            UNALLOCATED,
+            UNALLOCATED,
+            1,
             0,
         ))
     return b"".join(entries)
@@ -99,9 +134,13 @@ def install_expansion_metadata(out: bytearray, profile: str, source_sha256: str)
 
     header = build_header(profile, source_sha256)
     directory = build_directory()
+    legacy_species_map = build_legacy_species_map_block()
+
     out[base:base + len(header)] = header
-    start = base + DIRECTORY_BANK_OFFSET
-    out[start:start + len(directory)] = directory
+    directory_start = base + DIRECTORY_BANK_OFFSET
+    out[directory_start:directory_start + len(directory)] = directory
+    map_start = base + MAP_BANK_OFFSET
+    out[map_start:map_start + len(legacy_species_map)] = legacy_species_map
 
 
 def inspect_header(data: bytes, profile: str) -> dict[str, int | str]:
@@ -111,7 +150,7 @@ def inspect_header(data: bytes, profile: str) -> dict[str, int | str]:
     fields = values[1:17]
     source_prefix = values[17]
     crc32 = values[18]
-    reserved = values[19]
+    legacy_species_map_cpu_address = values[19]
 
     raw = bytearray(data[base:base + HEADER_SIZE])
     raw[56:60] = b"\x00" * 4
@@ -131,5 +170,5 @@ def inspect_header(data: bytes, profile: str) -> dict[str, int | str]:
         "source_sha256_prefix": source_prefix.hex(),
         "crc32": crc32,
         "crc32_valid": int(crc32 == expected_crc),
-        "reserved": reserved,
+        "legacy_species_map_cpu_address": legacy_species_map_cpu_address,
     }

@@ -13,8 +13,10 @@ from pathlib import Path
 
 try:
     from blue_expansion_layout import install_expansion_metadata
+    from legacy_species_mapping import validate_pokedex_order_source
 except ModuleNotFoundError:
     from tools.blue_expansion_layout import install_expansion_metadata
+    from tools.legacy_species_mapping import validate_pokedex_order_source
 
 TARGET_SIZE = 0x800000
 TARGET_CART = 0x1B
@@ -163,6 +165,7 @@ def validate_source(data: bytes) -> str:
         raise ValueError("verified VBlank RETI byte is not present")
 
     executable_rom_bank_writes(data, profile)
+    validate_pokedex_order_source(data, profile)
     return profile
 
 
@@ -290,7 +293,8 @@ def main() -> int:
     print(
         f"{profile}: {len(source)} -> {len(expanded)} bytes; "
         f"MBC5 8 MiB / 128 KiB SRAM; FarCall9=0x{FARCALL9_ADDR:04X}; "
-        f"LegacyBank8=0x{LEGACY_BANK8_ADDR:04X}; patched-writes={count}; metadata=installed"
+        f"LegacyBank8=0x{LEGACY_BANK8_ADDR:04X}; patched-writes={count}; "
+        "metadata=installed; legacy-species-map=190->151"
     )
     return 0
 

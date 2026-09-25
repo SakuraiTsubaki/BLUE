@@ -22,9 +22,8 @@ MBC5 bank 0x1FF.
 The metadata bank begins at CPU address 0x4000 with a 64-byte little-endian
 header whose magic is ASCII `BLU10ROM`.
 
-It records:
+Schema 2 records:
 
-- schema version;
 - source profile ID;
 - physical metadata bank;
 - first allocatable content bank;
@@ -32,31 +31,33 @@ It records:
 - expansion SRAM bank range;
 - FarCall9 / SetBank9 / VBlank9 / LegacyBank8 entry points;
 - registry-directory address/count/entry size;
+- legacy-species mapping address `0x4200`;
 - the first 16 bytes of the verified source ROM SHA-256;
 - header CRC32.
 
 ## Canonical registry directory
 
-The directory starts at CPU address 0x4080 in the metadata bank.
+The directory begins at CPU address `0x4080`.
 
-Each 16-byte directory record has a 16-bit domain ID and a future far pointer.
-Initial count is **zero** and the pointer is `0xFFFF:0xFFFF` until that
-domain's real storage is allocated.
+Each 16-byte directory record contains a 16-bit domain ID and a future far
+pointer.
 
-Domains:
+The species namespace now reserves canonical IDs `1..151`, grounded in the
+verified Gen I PokedexOrder table. Species record storage itself remains
+unallocated. Other domains remain count 0 until real data is imported.
 
-1. species
-2. form
-3. move
-4. item
-5. ability
-6. type
-7. map
-8. location
-9. trainer class
-10. evolution method
+Unallocated far pointers remain `0xFFFF:0xFFFF`.
 
-All expanded canonical IDs are 16-bit and append-only. Generation I byte IDs
-remain profile-local compatibility values and are not silently reinterpreted.
+## Legacy species map
 
-This bootstrap reserves the format, not fictitious Generation 10 content.
+CPU address `0x4200` contains the versioned `BLU1SPC` mapping block:
+
+- 190 Generation I internal species slots;
+- 151 official species mapped to canonical National Dex IDs 1..151;
+- 39 MissingNo. slots mapped to canonical ID 0;
+- 16-bit little-endian canonical IDs;
+- payload CRC32.
+
+This is verified against all six supplied Blue-family ROMs before expansion.
+
+Generation 10 capacity remains structural. No unreleased species are invented.
