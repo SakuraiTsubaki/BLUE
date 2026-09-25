@@ -8,22 +8,40 @@ import zlib
 try:
     from legacy_species_mapping import (
         CANONICAL_SPECIES_COUNT,
-        LOOKUP_BANK_OFFSET,
-        LOOKUP_CPU_ADDRESS,
-        MAP_BANK_OFFSET,
-        MAP_CPU_ADDRESS,
+        LOOKUP_BANK_OFFSET as SPECIES_LOOKUP_BANK_OFFSET,
+        LOOKUP_CPU_ADDRESS as SPECIES_LOOKUP_CPU_ADDRESS,
+        MAP_BANK_OFFSET as SPECIES_MAP_BANK_OFFSET,
+        MAP_CPU_ADDRESS as SPECIES_MAP_CPU_ADDRESS,
         build_legacy_species_map_block,
-        build_lookup_routine,
+        build_lookup_routine as build_species_lookup_routine,
+    )
+    from legacy_move_mapping import (
+        CANONICAL_MOVE_COUNT,
+        LOOKUP_BANK_OFFSET as MOVE_LOOKUP_BANK_OFFSET,
+        LOOKUP_CPU_ADDRESS as MOVE_LOOKUP_CPU_ADDRESS,
+        MAP_BANK_OFFSET as MOVE_MAP_BANK_OFFSET,
+        MAP_CPU_ADDRESS as MOVE_MAP_CPU_ADDRESS,
+        build_legacy_move_map_block,
+        build_lookup_routine as build_move_lookup_routine,
     )
 except ModuleNotFoundError:
     from tools.legacy_species_mapping import (
         CANONICAL_SPECIES_COUNT,
-        LOOKUP_BANK_OFFSET,
-        LOOKUP_CPU_ADDRESS,
-        MAP_BANK_OFFSET,
-        MAP_CPU_ADDRESS,
+        LOOKUP_BANK_OFFSET as SPECIES_LOOKUP_BANK_OFFSET,
+        LOOKUP_CPU_ADDRESS as SPECIES_LOOKUP_CPU_ADDRESS,
+        MAP_BANK_OFFSET as SPECIES_MAP_BANK_OFFSET,
+        MAP_CPU_ADDRESS as SPECIES_MAP_CPU_ADDRESS,
         build_legacy_species_map_block,
-        build_lookup_routine,
+        build_lookup_routine as build_species_lookup_routine,
+    )
+    from tools.legacy_move_mapping import (
+        CANONICAL_MOVE_COUNT,
+        LOOKUP_BANK_OFFSET as MOVE_LOOKUP_BANK_OFFSET,
+        LOOKUP_CPU_ADDRESS as MOVE_LOOKUP_CPU_ADDRESS,
+        MAP_BANK_OFFSET as MOVE_MAP_BANK_OFFSET,
+        MAP_CPU_ADDRESS as MOVE_MAP_CPU_ADDRESS,
+        build_legacy_move_map_block,
+        build_lookup_routine as build_move_lookup_routine,
     )
 
 ROM_BANK_BYTES = 0x4000
@@ -90,7 +108,7 @@ def build_header(profile: str, source_sha256: str) -> bytes:
         *fields,
         source_prefix,
         0,
-        MAP_CPU_ADDRESS,
+        SPECIES_MAP_CPU_ADDRESS,
     )
     if len(raw) != HEADER_SIZE:
         raise AssertionError("BLUE expansion header size changed")
@@ -101,23 +119,30 @@ def build_header(profile: str, source_sha256: str) -> bytes:
         *fields,
         source_prefix,
         crc32,
-        MAP_CPU_ADDRESS,
+        SPECIES_MAP_CPU_ADDRESS,
     )
 
 
 def build_directory(profile: str) -> bytes:
     entries = []
+    metadata_bank = PROFILE_LAYOUT[profile]["metadata_bank"]
+
     for name, domain_id in REGISTRY_DOMAINS:
+        flags = 0
+        count = 0
+        bank = UNALLOCATED
+        address = UNALLOCATED
+
         if name == "species":
             flags = REGISTRY_FLAG_NAMESPACE_RESERVED | REGISTRY_FLAG_CALLABLE_ADAPTER
             count = CANONICAL_SPECIES_COUNT
-            bank = PROFILE_LAYOUT[profile]["metadata_bank"]
-            address = LOOKUP_CPU_ADDRESS
-        else:
-            flags = 0
-            count = 0
-            bank = UNALLOCATED
-            address = UNALLOCATED
+            bank = metadata_bank
+            address = SPECIES_LOOKUP_CPU_ADDRESS
+        elif name == "move":
+            flags = REGISTRY_FLAG_NAMESPACE_RESERVED | REGISTRY_FLAG_CALLABLE_ADAPTER
+            count = CANONICAL_MOVE_COUNT
+            bank = metadata_bank
+            address = MOVE_LOOKUP_CPU_ADDRESS
 
         entries.append(struct.pack(
             DIRECTORY_FORMAT,
@@ -145,18 +170,27 @@ def install_expansion_metadata(out: bytearray, profile: str, source_sha256: str)
 
     header = build_header(profile, source_sha256)
     directory = build_directory(profile)
-    legacy_species_map = build_legacy_species_map_block()
-    lookup_routine = build_lookup_routine()
+    species_map = build_legacy_species_map_block()
+    species_lookup = build_species_lookup_routine()
+    move_map = build_legacy_move_map_block()
+    move_lookup = build_move_lookup_routine()
 
     out[base:base + len(header)] = header
+
     directory_start = base + DIRECTORY_BANK_OFFSET
     out[directory_start:directory_start + len(directory)] = directory
 
-    map_start = base + MAP_BANK_OFFSET
-    out[map_start:map_start + len(legacy_species_map)] = legacy_species_map
+    start = base + SPECIES_MAP_BANK_OFFSET
+    out[start:start + len(species_map)] = species_map
 
-    lookup_start = base + LOOKUP_BANK_OFFSET
-    out[lookup_start:lookup_start + len(lookup_routine)] = lookup_routine
+    start = base + SPECIES_LOOKUP_BANK_OFFSET
+    out[start:start + len(species_lookup)] = species_lookup
+
+    start = base + MOVE_MAP_BANK_OFFSET
+    out[start:start + len(move_map)] = move_map
+
+    start = base + MOVE_LOOKUP_BANK_OFFSET
+    out[start:start + len(move_lookup)] = move_lookup
 
 
 def inspect_header(data: bytes, profile: str) -> dict[str, int | str]:

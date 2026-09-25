@@ -14,43 +14,29 @@
 Ordinary expanded content begins after the profile metadata bank and may extend
 through MBC5 bank 0x1FF.
 
-## Metadata header
+## Metadata services
 
-CPU `0x4000`: 64-byte `BLU10ROM` schema-2 header.
+- `0x4000`: `BLU10ROM` metadata header
+- `0x4080`: registry directory
+- `0x4200`: `BLU1SPC` 190-slot species byte→u16 map
+- `0x43A0`: callable species adapter
+- `0x4400`: `BLU1MOV` 256-code move byte→u16 map
+- `0x4620`: callable move adapter
 
-It records source provenance, expansion ranges, runtime entry points, registry
-directory shape, and the legacy species map address `0x4200`.
+Species directory entry:
 
-## Registry directory
+- count 151
+- metadata-bank pointer to 0x43A0
 
-CPU `0x4080`, 10 entries × 16 bytes.
+Move directory entry:
 
-The species entry is now live:
+- count 165
+- metadata-bank pointer to 0x4620
 
-- canonical count: 151;
-- flags: namespace-reserved + callable-adapter;
-- bank: profile metadata bank (0x020 or 0x040);
-- address: `0x43A0`.
+Both adapters use the stage-4 FarCall9 ABI, which preserves A across the bank
+switch and returns the canonical 16-bit ID in DE.
 
-Other domains remain unallocated until their verified mappings/data are added.
+Other namespaces remain unallocated until their own ROM-backed mappings are
+verified.
 
-## Legacy species mapping
-
-CPU `0x4200`: 400-byte `BLU1SPC` block.
-
-Its 190 little-endian 16-bit entries map the original internal species byte
-namespace to canonical IDs. The 151 official slots map to National Dex
-1..151; 39 MissingNo. slots map to 0.
-
-## Runtime species adapter
-
-CPU `0x43A0`: `LegacySpeciesToCanonical`.
-
-Input A is the original Gen I species ID. Output DE is the canonical 16-bit
-species ID. It is called through `FarCall9`, whose stage-4 ABI preserves A
-and flags while switching banks.
-
-This makes the species canonicalization a live runtime service rather than a
-manifest-only mapping.
-
-No unreleased Generation 10 species are invented.
+No unreleased Generation 10 content is invented.

@@ -1,0 +1,7 @@
+profile,file_offset,rom_bank,cpu_address,records,record_bytes,table_bytes,sha256,id_sequence,jp_international_difference
+ao-jp,0x38000,0x0E,0x4000,165,6,990,766c1dd686627e6e7493817428c40578231b7757fb73737db510aa49304d514e,0x01-0xA5,"Blizzard effect byte at table+0x15D is 0x23"
+blue-us-eu,0x38000,0x0E,0x4000,165,6,990,0c0d7a55f01f09c5f4859344d087cc824e516b2facc520e389e4bdcb8d14db1e,0x01-0xA5,"Blizzard effect byte at table+0x15D is 0x05"
+blue-fr,0x38000,0x0E,0x4000,165,6,990,0c0d7a55f01f09c5f4859344d087cc824e516b2facc520e389e4bdcb8d14db1e,0x01-0xA5,"same as international"
+blue-de,0x38000,0x0E,0x4000,165,6,990,0c0d7a55f01f09c5f4859344d087cc824e516b2facc520e389e4bdcb8d14db1e,0x01-0xA5,"same as international"
+blue-it,0x38000,0x0E,0x4000,165,6,990,0c0d7a55f01f09c5f4859344d087cc824e516b2facc520e389e4bdcb8d14db1e,0x01-0xA5,"same as international"
+blue-es,0x38000,0x0E,0x4000,165,6,990,0c0d7a55f01f09c5f4859344d087cc824e516b2facc520e389e4bdcb8d14db1e,0x01-0xA5,"same as international"

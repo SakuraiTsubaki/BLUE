@@ -1,7 +1,7 @@
 domain_id,domain,id_width_bits,legacy_source_width_bits,initial_count,allocation,notes
 1,species,16,8,151,append-only,Gen I canonical IDs 1-151 reserved; directory points to callable legacy species adapter
 2,form,16,0,0,append-only,form identity is separate from species identity
-3,move,16,8,0,append-only,legacy move IDs remain source-local
+3,move,16,8,165,append-only,Gen I move IDs 1-165 reserved; directory points to callable legacy move adapter
 4,item,16,8,0,append-only,legacy item IDs remain source-local
 5,ability,16,0,0,append-only,not present in Generation I legacy format
 6,type,16,8,0,append-only,legacy type IDs translate through profile adapter

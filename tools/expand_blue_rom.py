@@ -14,9 +14,11 @@ from pathlib import Path
 try:
     from blue_expansion_layout import install_expansion_metadata
     from legacy_species_mapping import validate_pokedex_order_source
+    from legacy_move_mapping import validate_move_table_source
 except ModuleNotFoundError:
     from tools.blue_expansion_layout import install_expansion_metadata
     from tools.legacy_species_mapping import validate_pokedex_order_source
+    from tools.legacy_move_mapping import validate_move_table_source
 
 TARGET_SIZE = 0x800000
 TARGET_CART = 0x1B
@@ -166,6 +168,7 @@ def validate_source(data: bytes) -> str:
 
     executable_rom_bank_writes(data, profile)
     validate_pokedex_order_source(data, profile)
+    validate_move_table_source(data, profile)
     return profile
 
 
@@ -293,7 +296,7 @@ def main() -> int:
         f"{profile}: {len(source)} -> {len(expanded)} bytes; "
         f"MBC5 8 MiB / 128 KiB SRAM; FarCall9=0x{FARCALL9_ADDR:04X}; "
         f"LegacyBank8=0x{LEGACY_BANK8_ADDR:04X}; patched-writes={count}; "
-        "metadata=installed; legacy-species-map=190->151; species-adapter=0x43A0"
+        "metadata=installed; species=190->151@0x43A0; moves=byte->u16@0x4620"
     )
     return 0
 
